@@ -1,6 +1,6 @@
 strgen
 ======
-Generate a randomized string of characters using a template.
+Generate randomized strings of characters using a template.
 
 The purpose of this module is to generate a string of characters
 according to a template.  The template language is superficially
