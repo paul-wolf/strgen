@@ -105,6 +105,7 @@ will produce strings like:
 
 Implicit Concatenation
 ----------------------
+
 Classes, literals and groups in sequence are concatenated, but
 beware that the permutation operator ('&') will cause sequences to
 be permuted that are
