@@ -30,7 +30,7 @@ This generates 10 unique strings containing digits. Each will be 10 characters i
 
 It supports the following constructs:
 
-Literal: <any string>
+Literal: \<any string>
 ---------------------
 Any literal string.
 
@@ -38,7 +38,7 @@ Example:
 
     abc
 
-Character class: [<class specification>]
+Character class: [\<class specification>]
 ----------------------------------------
 Much like in regular expressions, it uses strings of characters
 and hyphen for defining a class of characters.
