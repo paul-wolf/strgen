@@ -10,15 +10,15 @@ purpose.
 Constructor
 -----------
 
-    StringGenerator(<template>)
+    StringGenerator(\<template>)
 
 Usage:
 
-    StringGenerator(<template>).render()
+    StringGenerator(\<template>).render()
 
 or:
 
-    StringGenerator(<template>).render_list(10,unique=True)
+    StringGenerator(\<template>).render_list(10,unique=True)
 
 The latter produces a list of 10 strings that are unique within the list.
 
@@ -40,6 +40,7 @@ Example:
 
 Character class: [\<class specification>]
 ----------------------------------------
+
 Much like in regular expressions, it uses strings of characters
 and hyphen for defining a class of characters.
 
@@ -51,6 +52,7 @@ Generate a string with lower case letters, digits and the underscore.
 
 Quantifier: {x:y}
 -----------------
+
 Where x is lower bound and y is upper bound. This construct must
 always follow immediately a class with no intervening
 whitespace. It is possible to write {:y} as a shorthand for {0:y}
@@ -68,24 +70,27 @@ alphabetic characters
 Generates a string with either four lower case alphbetic
 characters or a string that is 9 digits in length.
 
-Groups:  (<group sepcification>)
+Groups:  (\<group sepcification>)
 --------------------------------
+
 A group specification is a collection of literals, character
 classes or other groups divided by the OR operator '|' or the
 permutation operator '&'.
 
 OR Operator
 -----------
+
 The binary '|' operator can be used in a group to cause one of the
 operands to be return and the other to be ignored with an even
 chance.
 
-Permutation Operator
---------------------
+Permutation Operator 
+-------------------- 
+
 The binary '&' operator causes its operands to be combined and
-permuted (possibly qualified by a quantifier).  This addresses the
-use case for many password requirements, such as, "at least 6
-characters where 2 or more are digits". This can be done so:
+permuted.  This addresses the use case for many password requirements,
+such as, "at least 6 characters where 2 or more are digits". This can
+be done so:
 
     [\l]{6:10}&[\d]{2}
 
