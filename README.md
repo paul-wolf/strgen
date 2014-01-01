@@ -10,15 +10,15 @@ purpose.
 Constructor
 -----------
 
-    StringGenerator(\<template>)
+    StringGenerator(<template>)
 
 Usage:
 
-    StringGenerator(\<template>).render()
+    StringGenerator(<template>).render()
 
 or:
 
-    StringGenerator(\<template>).render_list(10,unique=True)
+    StringGenerator(<template>).render_list(10,unique=True)
 
 The latter produces a list of 10 strings that are unique within the list.
 
