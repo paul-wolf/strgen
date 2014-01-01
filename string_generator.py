@@ -138,7 +138,7 @@ class StringGenerator(object):
         [\l]{6:10}&[\d]{2}
 
     If a literal or a group is an operand of the permutation operator,
-    it will be have it's string value permuted with the other operand.
+    it will be have its string value permuted with the other operand.
 
         foo&bar
 
@@ -166,7 +166,7 @@ class StringGenerator(object):
 
         98762269xxyyyx
 
-    Special Characters, escaping and Errors
+    Special Characters, Escaping and Errors
     ---------------------------------------
     There are fewer special characters than regular expressions: 
 
@@ -186,15 +186,15 @@ class StringGenerator(object):
     Use a colon in the curly braces to indicate a variable count
 
         [\w]       # randomly choose a single word character
-        [\w]{0:8}  # print word characters from 0-8 length 
+        [\w]{0:8}  # generate word characters from 0-8 length 
         [\w]{:8}   # a synonym for the above
-        [\w]{8}    # print word characters of exactly 8 in length
-        [a-z0-9]   # print a-z and digits, just one as there is no count specifier
+        [\w]{8}    # generate word characters of exactly 8 in length
+        [a-z0-9]   # generate a-z and digits, just one as there is no quantifier
         [a-z0-9_!@]  # you can combine ranges with individual characters
 
     Using a character class and no quantifier will result in a quantifier of 1. 
 
-    Here's an example of generating a syntactically valid but - hopefully - spurious email address: 
+    Here's an example of generating a syntactically valid but, hopefully, spurious email address: 
 
         [a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)
 
@@ -223,9 +223,9 @@ class StringGenerator(object):
     The number of times the generator needs to render new strings to
     satisfy the list length and uniqueness is not determined at parse
     time. However, the maximum numer of times it will try is by
-    defualt n * 10 where n is the requested length of the
+    default n * 10 where n is the requested length of the
     list. Therefore, taking the above example, the generator will
-    attempt to generate the unique list of 0's and 1's 100*10 times.
+    attempt to generate the unique list of 0's and 1's 100*10 = 1000 times.
 
     Unicode
     -------

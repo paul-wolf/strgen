@@ -1,6 +1,8 @@
+strgen
+======
 Generate a randomized string of characters using a template.
 
-The purpose of this class is to generate a string of characters
+The purpose of this module is to generate a string of characters
 according to a template.  The template language is superficially
 similar to regular expressions but fundamentally different in
 purpose.
@@ -44,6 +46,7 @@ and hyphen for defining a class of characters.
 Example:
 
     [a-z0-9_]
+
 Generate a string with lower case letters, digits and the underscore.
 
 Quantifier: {x:y}
@@ -87,7 +90,7 @@ characters where 2 or more are digits". This can be done so:
     [\l]{6:10}&[\d]{2}
 
 If a literal or a group is an operand of the permutation operator,
-it will be have it's string value permuted with the other operand.
+it will be have its string value permuted with the other operand.
 
     foo&bar
 
@@ -116,9 +119,9 @@ to be what is expected or wished for.
 
 Use a colon in the curly braces to indicate a variable count
 
-    [\w]{0:8}  # print word characters from 0-8 length
+    [\w]{0:8}  # generate word characters from 0-8 length
     [\w]{:8}  # a synonym for the above
-    [\w]{8}  # print word characters of exactly 8 in length
+    [\w]{8}  # generat word characters of exactly 8 in length
     [a-z0-9]  # print a-z and digits, just one as there is no count specifier
     [a-z0-9_!@]  # you can combine ranges with individual characters
 
@@ -129,13 +132,12 @@ Literal strings: 'abc'
 Here's an example of generating a syntactically valid but - hopefully
 - spurious email address:
 
-    [a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)
+    [\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)
 
-The name will begin with a letter and will be from 1 - 11 chars; the
-last name will be 10 chars of lower case letters, each separated by
-either a dot or underscore.  The domain name without domain class will
-be 1 - 22 chars [a-zA-Z0-9_] and the domain will be one of
-'.com','.net','.org'.
+The name will be 10 chars; the last name will be 10 chars of lower
+case letters, each separated by either a dot or underscore.  The
+domain name without domain class will be 1 - 22 chars [a-zA-Z0-9_] and
+the domain will be one of '.com','.net','.org'.
 
 Using multiple character set codes repeatedly will increase the
 probability of a character from that set occuring in the result
