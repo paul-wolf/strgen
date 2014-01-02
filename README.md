@@ -9,7 +9,7 @@ using a template language. The template language is superficially
 similar to regular expressions but instead of defining how to find or
 capture strings, it defines how to generate randomized strings.
 
-An example template for generating a very strong password:
+An example template for generating a strong password:
 
      [\w\p\d]{20}
 
@@ -20,15 +20,18 @@ will generate something like the following:
 Constructor
 -----------
 
-    StringGenerator(<template>)
+	import StringGenerator from strgen
+	StringGenerator(<template>)	    
 
 Usage:
 
-    StringGenerator(<template>).render()
+	import StringGenerator from strgen
+	StringGenerator(<template>).render()
 
 or:
 
-    StringGenerator(<template>).render_list(10,unique=True)
+	import StringGenerator from strgen
+    	StringGenerator(<template>).render_list(10,unique=True)
 
 The latter produces a list of 10 strings that are unique within the list.
 
