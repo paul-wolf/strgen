@@ -61,6 +61,23 @@ Example:
 
 Randomly choose characters from the set of lower case letters, digits and the underscore.
 
+Character Set Codes
+-------------------
+
+* `\W`: whitespace + punctuation
+* `\a`: ascii_letters
+* `\c`: lowercase
+* `\d`: digits
+* `\h`: hexdigits
+* `\l`: letters
+* `\o`: octdigits
+* `\p`: punctuation
+* `\r`: printable
+* `\s`: whitespace
+* `\u`: uppercase
+* `\w`: `_` + letters + digits
+
+
 Quantifier: {x:y} 
 ----------------- 
 
