@@ -104,7 +104,7 @@ Using a character class and no quantifier will result in a quantifier of 1. Thus
 
 will result always in either `a`, `b`, or `c`. 
 
-Groups:  (\<group sepcification>)
+Group:  (\<group sepcification>)
 --------------------------------
 
 A group specification is a collection of literals, character
@@ -164,13 +164,10 @@ There are fewer special characters than regular expressions:
 
 They can be used as literals by escaping with backslash. All other
 characters are treated as literals.  The hyphen is only special in a
-character class, when it appears within square brackets. The parser
-may do unexpected things if errors are made, usually in favour of
-laxness, passing over errors silently, like forgetting to close a
-group or class with closing brackets, having space between a class and
-quantifier.  But the result in the case of such an error is not likely
-to be what is expected or wished for, and the quality of the
-randomization will likely be impaired.
+character class, when it appears within square brackets. The template 
+parser tries to raise exceptions when syntax errors are made, but not 
+every error will be caught, like having space between a class and
+quantifier. 
 
 Character Classes and Quantifiers
 ---------------------------------
@@ -223,7 +220,7 @@ satisfy the list length and uniqueness is not determined at parse
 time. However, the maximum number of times it will try is by default
 n*10 where n is the requested length of the list. Therefore, taking
 the above example, the generator will attempt to generate the unique
-list of 0's and 1's 100*10 = 1000 times.
+list of 0's and 1's 100*10 = 1000 times before giving up.
 
 Unicode
 -------
@@ -241,7 +238,7 @@ Randomness Methods
 ------------------
 
 The generator tries to use `random.SystemRandom()` for `randint`,
-`shuffle`, etc. It falls back to `random.randint` and associated
+`choice`, etc. It falls back to `random.randint` and associated
 methods if it can't use `SystemRandom`.
 
 Design Goals
@@ -257,11 +254,11 @@ The module is designed with the following goals in mind:
 * Keep syntax as simple as possible while being pragmatic.
 
 * Provide an implementation design with associated behaviour that
-  strikes the right balance of easy-of-implementation with
+  strikes the right balance between ease-of-implementation and
   ease-of-use.
 
 * Superficially similar to regular expressions to enable
-  developers to quickly pickup the template syntax.
+  developers to quickly pick up the template syntax.
 
 
 License
