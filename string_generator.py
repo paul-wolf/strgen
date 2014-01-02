@@ -570,10 +570,19 @@ class StringGenerator(object):
         return StringGenerator.Sequence(seq)
 
     def render(self):
-        u"""Produce a randomized string that fits the template/pattern."""
+        u"""Produce a randomized string that fits the template/pattern.
+
+        Args:
+            None
+
+        Returns:
+            str. The generated string.
+
+        """
         if not self.pattern:
             raise Exception(u"No pattern specified")
         if not self.seq:
+            # parse the template
             self.seq = self.getSequence()
         return self.seq.render()
 
@@ -588,9 +597,12 @@ class StringGenerator(object):
     def render_list(self,cnt,unique=False):
         u"""Return a list of generated strings.
 
-        Arguments
-            cnt: length of list
-            unique: whether to make entries unique
+        Args:
+            cnt (int): length of list
+            unique (bool): whether to make entries unique
+
+        Returns:
+            list. 
 
         We keep track of total attempts because a template may
         specify something impossible to attain, like [1-9]{} with cnt==1000
