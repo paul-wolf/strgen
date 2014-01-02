@@ -259,7 +259,7 @@ class StringGenerator(object):
             if d.isnumeric():
                 digits += d
             else:
-                raise Exception(u"non-digit in count")
+                raise StringGenerator.SyntaxError(u"non-digit in count")
         return [start,int(digits)]
 
     def getCharacterRange(self,f,t):
@@ -289,7 +289,7 @@ class StringGenerator(object):
                 self.next() # skip hyphen
                 c = self.next() # get far range
                 if not c or (c in self.meta_chars):
-                    raise Exception(u"unexpected end of class range")
+                    raise StringGenerator.SyntaxError(u"unexpected end of class range")
                 chars += self.getCharacterRange(f,c)
             elif c == u'\\':
                 if self.lookahead() in self.meta_chars:
@@ -300,7 +300,6 @@ class StringGenerator(object):
                     chars += self.string_code[c]
             elif c and c not in self.meta_chars:
                 chars += c
-                
             if c == u']':
                 if self.lookahead() == u'{':
                     [start,cnt] = self.getQuantifier()
@@ -308,6 +307,8 @@ class StringGenerator(object):
                     start = -1
                     cnt = 1
                 break
+            if c in self.meta_chars and not self.last() == u"\\":
+                raise StringGenerator.SyntaxError(u"Un-escaped character in class definition: %s"%c)
             if not c:
                 break
 
@@ -365,7 +366,8 @@ class StringGenerator(object):
             elif c == u'&' and not self.last() == u'\\':
                 op = c
             else:
-                pass
+                if c in self.meta_chars and not self.last() == u"\\":
+                    raise StringGenerator.SyntaxError(u"Un-escaped special character: %s"%c)
 
             #print op,len(seq)
             if op and not left_operand:
