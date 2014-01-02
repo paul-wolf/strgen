@@ -31,7 +31,7 @@ Usage:
 or:
 
 	import StringGenerator from strgen
-    	StringGenerator(<template>).render_list(10,unique=True)
+	StringGenerator(<template>).render_list(10,unique=True)
 
 The latter produces a list of 10 strings that are unique within the list.
 
