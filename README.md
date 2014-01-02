@@ -190,7 +190,7 @@ spurious email address:
 
     [\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)
 
-The first name will be from 1 - 10 lower case characters; the last name
+The first name will be exactly 10 lower case characters; the last name
 will be 5-10 characters of lower case letters, each separated by
 either a dot or underscore.  The domain name without domain class will
 be 3 - 12 lower case characters and the domain type will be one of
