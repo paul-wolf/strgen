@@ -373,7 +373,6 @@ class StringGenerator(object):
             if op and not left_operand:
                 if not seq or len(seq) < 1:
                     raise StringGenerator.SyntaxError(u"Operator: %s with no left operand"%op)
-                print seq
                 left_operand = seq.pop()
             elif op and len(seq) >= 1 and left_operand:
                 right_operand = seq.pop()
