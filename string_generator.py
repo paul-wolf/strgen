@@ -80,6 +80,9 @@ class StringGenerator(object):
 
 
     """
+    class SyntaxError(Exception):
+        pass
+
 
     meta_chars = u'[]{}()|&'
     mytab = u" "*4
@@ -134,6 +137,7 @@ class StringGenerator(object):
             return u''.join([ x.render() for x in self.seq])
 
         def dump(self,level=-1):
+            print (StringGenerator.mytab*level) + u"sequence:"
             for s in self.seq:
                 s.dump(level + 1)
 
@@ -331,51 +335,63 @@ class StringGenerator(object):
         return StringGenerator.Literal(chars)
 
 
-    def getSequence(self):
+    def getSequence(self,level=0):
         u"""Get a sequence of nodes."""
 
         seq = []
         op = ''
-        operand_count = 0
+        left_operand = None
+        right_operand = None
+        sequence_closed = False
         while True:
             c = self.next()
             if not c:
                 break
             if c and c not in self.meta_chars:
                 seq.append(self.getLiteral())
-                operand_count += 1
             elif c == u'[' and not self.last() == u'\\':
                 seq.append(self.getCharacterSet())
-                operand_count += 1
             elif c == u'(' and not self.last() == u'\\':
-                seq.append(self.getSequence())
-                operand_count += 1
+                seq.append(self.getSequence(level+1))
             elif c == u')' and not self.last() == u'\\':
-                # we never get here because it's eaten by getSquence()
-                # unless there are unbalanced parens
-                #raise Exception("unbalanced parens")
-                pass
+                # end of this sequence
+                if level == 0:
+                    # there should be no parens here
+                    raise StringGenerator.SyntaxError(u"Extra closing parenthesis")
+                sequence_closed = True
+                break
             elif c == u'|' and not self.last() == u'\\':
                 op = c
-                operand_count += 1
             elif c == u'&' and not self.last() == u'\\':
                 op = c
-                operand_count += 1
             else:
                 pass
 
-            #print op,operand_count,len(seq)
-            if op and len(seq) > 1 and operand_count > 1:
-                # take last two seq entries and create a single entry
-                right_operand = seq.pop()
+            #print op,len(seq)
+            if op and not left_operand:
+                if not seq or len(seq) < 1:
+                    raise StringGenerator.SyntaxError(u"Operator: %s with no left operand"%op)
+                print seq
                 left_operand = seq.pop()
+            elif op and len(seq) >= 1 and left_operand:
+                right_operand = seq.pop()
+
                 #print "popped: [%s] %s:%s"%( op, left_operand, right_operand)
                 if op == u'|':
-                    seq.append(StringGenerator.SequenceOR([right_operand,left_operand]))
+                    seq.append(StringGenerator.SequenceOR([left_operand,right_operand]))
                 elif op == u'&':
-                    seq.append(StringGenerator.SequenceAND([right_operand,left_operand]))
-                operand_count = 0
+                    seq.append(StringGenerator.SequenceAND([left_operand,right_operand]))
+
                 op = u''
+                left_operand = None
+                right_operand = None
+
+        # check for syntax errors
+        if op:
+            raise StringGenerator.SyntaxError(u"Operator: %s with no right operand"%op)
+        if level > 0 and not sequence_closed:
+            # it means we are finishing a non-first-level sequence without closing parens
+            raise StringGenerator.SyntaxError(u"Missing closing parenthesis")
 
         return StringGenerator.Sequence(seq)
 
@@ -386,7 +402,7 @@ class StringGenerator(object):
             None
 
         Returns:
-            str. The generated string.
+            unicode. The generated string.
 
         """
         if not self.pattern:

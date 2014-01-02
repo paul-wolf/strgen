@@ -72,6 +72,12 @@ alphabetic characters
 Generates a string with either four lower case alphbetic
 characters or a string that is 9 digits in length.
 
+Using a character class and no quantifier will result in a quantifier of 1. Thus:
+
+      [abc]
+
+will result always in either `a`, `b`, or `c`. 
+
 Groups:  (\<group sepcification>)
 --------------------------------
 
@@ -89,7 +95,7 @@ chance.
 Permutation Operator
 --------------------
 
-The binary '&' operator causes its operands to be combined and
+The binary `&` operator causes its operands to be combined and
 permuted.  This addresses the use case for many password requirements,
 such as, "at least 6 characters where 2 or more are digits". This can
 be done so:
@@ -105,26 +111,23 @@ will produce strings like:
 
     orbfao
 
-Concatenation and Permutation
------------------------------
+Concatenation and Operators
+---------------------------
 
-Classes, literals and groups in sequence are concatenated, but
-beware that the permutation operator ('&') will greedily consume
-the sequence of nodes on either side unless parenthenses are used.
+Classes, literals and groups in sequence are concatenated in the order
+they occur.  Use of the `|` or `&` operators always bind the operands
+immediately to the left and right:
 
     [\d]{8}xxx&yyy
 
 produces something like: 
 
-     x44132x094xyyy
+     00488926xyyxxy
 
-but
+In otherwords, the digits occur first in sequence as expected. This is
+equivalent to this:
 
     [\d]{8}(xxx&yyy)
-
-Keeps all the digits at the front, which may be the intention:
-
-    98762269xxyyyx
 
 Special Characters, Escaping and Errors
 ---------------------------------------
@@ -155,8 +158,6 @@ sensible defaults:
     [\w]{8}    # generate word characters of exactly 8 in length
     [a-z0-9]   # generate a-z and digits, just one as there is no quantifier
     [a-z0-9_!@]  # you can combine ranges with individual characters
-
-Using a character class and no quantifier will result in a quantifier of 1. 
 
 Here's an example of generating a syntactically valid but, hopefully,
 spurious email address:
