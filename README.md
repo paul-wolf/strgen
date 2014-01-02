@@ -3,7 +3,7 @@ strgen
 
 Generate randomized strings of characters using a template.
 
-This is a Python module that enables a user to test generate data,
+This is a Python module that enables a user to generate test data,
 unique ids, passwords, vouchers or other randomized data very quickly
 using a template language. The template language is superficially
 similar to regular expressions but instead of defining how to find or
