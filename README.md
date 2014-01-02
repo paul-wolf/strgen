@@ -3,11 +3,11 @@ strgen
 
 Generate randomized strings of characters using a template.
 
-This is a Python module that enables a user to test data, unique ids,
-passwords, vouchers or other randomized data very quickly using a
-template language. The template language is superficially similar to
-regular expressions but instead of defining how to find or capture
-strings, it defines how to generate randomized strings.
+This is a Python module that enables a user to test generate data,
+unique ids, passwords, vouchers or other randomized data very quickly
+using a template language. The template language is superficially
+similar to regular expressions but instead of defining how to find or
+capture strings, it defines how to generate randomized strings.
 
 An example template for generating a very strong password:
 
