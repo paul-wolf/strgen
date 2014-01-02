@@ -62,7 +62,7 @@ alphabetic characters
 Generates a string with either four lower case alphbetic
 characters or a string that is 9 digits in length.
 
-Groups:  (<group sepcification>)
+Groups:  (\<group sepcification>)
 --------------------------------
 A group specification is a collection of literals, character
 classes or other groups divided by the OR operator '|' or the
@@ -77,7 +77,7 @@ chance.
 Permutation Operator
 --------------------
 The binary '&' operator causes its operands to be combined and
-permuted (possibly qualified by a quantifier).  This addresses the
+permuted.  This addresses the
 use case for many password requirements, such as, "at least 6
 characters where 2 or more are digits". This can be done so:
 
@@ -92,8 +92,8 @@ will produce strings like:
 
     orbfao
 
-Implicit Concatenation 
----------------------- 
+Concatenation and Permutation
+-----------------------------
 Classes, literals and groups in sequence are concatenated, but
 beware that the permutation operator ('&') will greedily consume
 the sequence of nodes on either side unless parenthenses are used.
@@ -127,9 +127,9 @@ to close a group or class with closing brackets, having space
 between a class and quantifier.  But the result in the case of
 such an error is not likely to be what is expected or wished for.
 
-Characters Classes and Quantifiers
-----------------------------------
-Use a colon in the curly braces to indicate a variable count
+Character Classes and Quantifiers
+---------------------------------
+Use a colon in the curly braces to indicate a range, but there are sensible defaults:
 
     [\w]       # randomly choose a single word character
     [\w]{0:8}  # generate word characters from 0-8 length 
@@ -142,11 +142,11 @@ Using a character class and no quantifier will result in a quantifier of 1.
 
 Here's an example of generating a syntactically valid but, hopefully, spurious email address: 
 
-    [a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)
+    [\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)
 
-The name will begin with a letter and will be from 1 - 11 chars; the last name will be 10 chars
+The name will be be from 1 - 11 lower case characters; the last name will be 5-10 characters
 of lower case letters, each separated by either a dot or underscore. 
-The domain name without domain class will be 1 - 22 chars [a-zA-Z0-9_] and the domain will be
+The domain name without domain class will be 3 - 12 lower case characters and the domain type will be
 one of '.com','.net','.org'.
 
 Using multiple character set codes repeatedly will increase the probability of a character
@@ -159,6 +159,8 @@ if this were used:
 
     [a-z\d]
 
+Uniqueness
+----------
 When using the unique=True flag, it's possible the generator cannot possibly produce the
 required number of unique strings. For instance: 
 
