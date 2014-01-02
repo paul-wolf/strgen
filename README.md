@@ -187,17 +187,17 @@ Uniqueness
 When using the `unique=True` flag, it's possible the generator cannot
 possibly produce the required number of unique strings. For instance:
 
-   StringGenerator("[0-1]").render_list(100,unique=True)
+	 StringGenerator("[0-1]").render_list(100,unique=True)
 
 This will generate an exception, but not before attempting to generate
 the strings.
 
 The number of times the generator needs to render new strings to
 satisfy the list length and uniqueness is not determined at parse
-time. However, the maximum number of times it will try is by default n
-* 10 where n is the requested length of the list. Therefore, taking
+time. However, the maximum number of times it will try is by default
+n*10 where n is the requested length of the list. Therefore, taking
 the above example, the generator will attempt to generate the unique
-list of 0's and 1's 100 * 10 = 1000 times.
+list of 0's and 1's 100*10 = 1000 times.
 
 Unicode
 -------
@@ -214,9 +214,9 @@ dependent on the locale settings.
 Randomness Methods
 ------------------
 
-The generator tries to use random.SystemRandom() for randint,
-shuffle, etc. It falls back to random.randint and associated
-methods if it can't use SystemRandom.
+The generator tries to use `random.SystemRandom()` for `randint`,
+`shuffle`, etc. It falls back to `random.randint` and associated
+methods if it can't use `SystemRandom`.
 
 Design Goals
 ------------
