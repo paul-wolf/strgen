@@ -24,7 +24,7 @@ The latter produces a list of 10 strings that are unique within the list.
 
 It supports the following constructs:
 
-Literal: <any string>
+Literal: \<any string>
 ---------------------
 Any literal string. 
 
@@ -32,7 +32,7 @@ Example:
 
     abc
 
-Character class: [<class specification>]
+Character class: [\<class specification>]
 ----------------------------------------
 Much like in regular expressions, it uses strings of characters
 and hyphen for defining a class of characters.
