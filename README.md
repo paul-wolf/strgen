@@ -98,7 +98,7 @@ alphabetic characters
 
     [a-z]{4}|[0-9]{9}
 
-Generates a string with either four lower case alphbetic
+Generates a string with either four lower case alphabetic
 characters or a string that is 9 digits in length.
 
 Using a character class and no quantifier will result in a quantifier of 1. Thus:
@@ -107,7 +107,7 @@ Using a character class and no quantifier will result in a quantifier of 1. Thus
 
 will result always in either `a`, `b`, or `c`. 
 
-Group:  (\<group sepcification>)
+Group:  (\<group specification>)
 --------------------------------
 
 A group specification is a collection of literals, character
@@ -126,8 +126,8 @@ Permutation Operator
 
 The binary `&` operator causes its operands to be combined and
 permuted.  This addresses the use case for many password requirements,
-such as, "at least 6 characters where 2 or more are digits". This can
-be done so:
+such as, "at least 6 characters where 2 or more are digits".  For
+instance:
 
     [\l]{6:10}&[\d]{2}
 
@@ -179,7 +179,7 @@ Use a colon in the curly braces to indicate a range. There are
 sensible defaults:
 
     [\w]       # randomly choose a single word character
-    [\w]{0:8}  # generate word characters from 0-8 length 
+    [\w]{0:8}  # generate word characters from 0-8 in length 
     [\w]{:8}   # a synonym for the above
     [\w]{8}    # generate word characters of exactly 8 in length
     [a-z0-9]   # generate a-z and digits, just one as there is no quantifier
@@ -215,15 +215,15 @@ possibly produce the required number of unique strings. For instance:
 
 	 StringGenerator("[0-1]").render_list(100,unique=True)
 
-This will generate an exception, but not before attempting to generate
+This will generate an exception but not before attempting to generate
 the strings.
 
 The number of times the generator needs to render new strings to
 satisfy the list length and uniqueness is not determined at parse
 time. However, the maximum number of times it will try is by default
-n*10 where n is the requested length of the list. Therefore, taking
+n x 10 where n is the requested length of the list. Therefore, taking
 the above example, the generator will attempt to generate the unique
-list of 0's and 1's 100*10 = 1000 times before giving up.
+list of 0's and 1's 100 x 10 = 1000 times before giving up.
 
 Unicode
 -------
@@ -244,13 +244,62 @@ The generator tries to use `random.SystemRandom()` for `randint`,
 `choice`, etc. It falls back to `random.randint` and associated
 methods if it can't use `SystemRandom`.
 
-Design Goals
-------------
+Rationale and Design Goals
+--------------------------
 
-The module is designed with the following goals in mind:
+In Python, the need to generate random strings comes up very
+frequently and is accomplished usually (though not always) via
+something like the following code snippet:
+
+	  import random
+	  import string
+	  ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(10))
+
+This generates a string that is 10 characters made of uppercase
+letters and digits. Unfortunately, this solution becomes cumbersome
+when real-world requirements are added. Take for example, the typical
+requirement to generate a password: "a password shall have 6 - 20
+characters of which at least one must be a digit and at least one must
+be a special character". The above solution then becomes much more
+complicated and changing the requirements is an error-prone and
+unnecessarily complex task.
+
+The equivalent using the strgen package is the following:
+
+    from strgen import StringGenerator as sg
+    sg('[\u\d]{10}').render()
+    
+strgen is far more compact, flexible and logical than using the
+standard solution:
+
+* It tries to use a better entropy mechanism and falls back gracefully
+  if this is not available.
+
+* The user can easily modify the specification (template) with minimal
+  effort and maximum precision.
+
+* Modifications to the template are simpler and far less error prone
+  than writing all the code necessary to implement changes in a random
+  string specification
+
+* It covers a broader set of use cases: unique ids, persistent unique
+  filenames, test data, etc.
+
+* The template syntax is very easy to learn for anyone familiar with
+  regular expressions while being much simpler.
+
+* It supports unicode.
+
+* It proposes a standard way of expressing common requirements, like
+  "a password shall have 6 - 20 characters of which at least one must
+  be a digit and at least one must be a special character":
+
+         [\l\d]{4:18}&[\d]&[\p]
+
+This package is designed with the following goals in mind:
 
 * Provide an abstract template language that does not depend on a
-  specific language implementation.
+  specific implementation language.
 
 * For Python, reduce dependencies on other packages.
 
@@ -263,6 +312,7 @@ The module is designed with the following goals in mind:
 * Superficially similar to regular expressions to enable
   developers to quickly pick up the template syntax.
 
+* Support non-ASCII languages (unicode).
 
 License
 -------
