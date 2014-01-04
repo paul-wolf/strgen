@@ -35,6 +35,12 @@ or:
 
 The latter produces a list of 10 strings that are unique within the list.
 
+Example:
+
+    >>> import StringGenerator from strgen
+	>>> StringGenerator('[\l\d]{4:18}&[\d]&[\p]').render()
+	u'Cde90uC{X6lWbOueT'
+
 The `template` is a string that is a sequence of one or more of the following: 
 
 * Literal text
@@ -51,6 +57,9 @@ Any literal string.
 Example:
 
     abc
+
+Special characters need to be escaped with backslash `\\`.
+
 
 Character class: [\<class specification>]
 ----------------------------------------
