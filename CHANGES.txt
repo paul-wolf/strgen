@@ -1,0 +1,5 @@
+
+Changes from version 0.1.1 to 1.1.2
+------------------------------------
+- fixed to work with Python 3 and 2.7
+

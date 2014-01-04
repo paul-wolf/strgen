@@ -33,6 +33,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import random
 import string
 
+__version__ = '1.1.2'
+
 try:
     # try to use cryptographically strong methods
     sr = random.SystemRandom()
@@ -46,6 +48,12 @@ except:
     choice = random.choice
     sample = random.sample
     shuffle = random.shuffle
+
+# check that we have python 2 functions available if we are under 3
+try:
+    x = unichr(0)
+except NameError:
+    unichr = chr
 
 class StringGenerator(object):
     u"""Generate a randomized string of characters using a template.
@@ -84,36 +92,36 @@ class StringGenerator(object):
         pass
 
 
-    meta_chars = u'[]{}()|&'
+    meta_chars = u'[]{}()|&$'
     mytab = u" "*4
 
     string_code = {
         u'd':string.digits,
-        u'w':'_'+string.letters+string.digits,
+        u'w':'_'+string.ascii_letters+string.digits,
         u'W':string.whitespace+string.punctuation,
         u's':string.whitespace,
         u'p':string.punctuation,
-        u'l':string.letters,
-        u'u':string.uppercase,
-        u'c':string.lowercase,
+        u'l':string.ascii_letters,
+        u'u':string.ascii_uppercase,
+        u'c':string.ascii_lowercase,
         u'o':string.octdigits,
         u'h':string.hexdigits,
         u'r':string.printable,
-        u'a':string.ascii_letters,
+        #u'a':string.ascii_letters,
     }
     string_code_help = {
         u'd':u'digits',
-        u'w':u'\'_\' + letters + digits',
+        u'w':u'\'_\' + ascii_letters + digits',
         u'W':u'whitespace + punctuation',
         u's':u'whitespace',
         u'p':u'punctuation',
-        u'l':u'letters',
-        u'u':u'uppercase',
-        u'c':u'lowercase',
+        u'l':u'ascii_letters',
+        u'u':u'ascii_uppercase',
+        u'c':u'ascii_lowercase',
         u'o':u'octdigits',
         u'h':u'hexdigits',
         u'r':u'printable',
-        u'a':u'ascii_letters',
+        #u'a':u'ascii_letters',
     }
 
 
@@ -137,7 +145,7 @@ class StringGenerator(object):
             return u''.join([ x.render() for x in self.seq])
 
         def dump(self,level=-1):
-            print (StringGenerator.mytab*level) + u"sequence:"
+            print((StringGenerator.mytab*level) + u"sequence:")
             for s in self.seq:
                 s.dump(level + 1)
 
@@ -150,7 +158,7 @@ class StringGenerator(object):
             return self.seq[randint(0,len(self.seq)-1)].render()
         
         def dump(self,level=-1):
-            print (StringGenerator.mytab*level) + u"OR"
+            print( (StringGenerator.mytab*level) + u"OR" )
             for s in self.seq:
                 s.dump(level + 1)
 
@@ -164,7 +172,7 @@ class StringGenerator(object):
             return u''.join(l)
 
         def dump(self,level=-1):
-            print (StringGenerator.mytab*level) + u"AND"
+            print( (StringGenerator.mytab*level) + u"AND" )
 
             for s in self.seq:
                 s.dump(level + 1)
@@ -179,13 +187,13 @@ class StringGenerator(object):
             return self.literal
 
         def dump(self,level=0):
-            print (StringGenerator.mytab*level) + self.literal
+            print( (StringGenerator.mytab*level) + self.literal )
 
         def __unicode__(self):
-            return unicode(self.literal)
+            return self.literal
 
         def __str__(self):
-            return str(unicode(self))
+            return str(self)
                             
     class CharacterSet(StringNode):
         u""" Render a random combination from a set of characters. """
@@ -195,7 +203,7 @@ class StringGenerator(object):
             try:
                 self.start = int(start)
                 self.cnt = int(cnt)
-            except Exception, e:
+            except Exception as e:
                 raise e
 
         def render(self):
@@ -207,13 +215,16 @@ class StringGenerator(object):
             return u''.join(self.chars[randint(0,len(self.chars)-1)] for x in range(cnt))
 
         def dump(self,level=0):
-            print StringGenerator.mytab*level+unicode(self)
+            print( StringGenerator.mytab*level+str(self) )
 
         def __unicode__(self):
             return u'%s:%s:%s'%(self.start,self.cnt,self.chars)
 
     def __init__(self,pattern,uaf=10):
-        self.pattern = unicode(pattern)
+        try:
+            self.pattern = unicode(pattern)
+        except NameError:
+            self.pattern = pattern
         self.seq = None
         self.index = -1
         self.unique_attempts_factor = uaf
@@ -369,7 +380,7 @@ class StringGenerator(object):
                 if c in self.meta_chars and not self.last() == u"\\":
                     raise StringGenerator.SyntaxError(u"Un-escaped special character: %s"%c)
 
-            #print op,len(seq)
+            #print( op,len(seq) )
             if op and not left_operand:
                 if not seq or len(seq) < 1:
                     raise StringGenerator.SyntaxError(u"Operator: %s with no left operand"%op)
@@ -377,7 +388,7 @@ class StringGenerator(object):
             elif op and len(seq) >= 1 and left_operand:
                 right_operand = seq.pop()
 
-                #print "popped: [%s] %s:%s"%( op, left_operand, right_operand)
+                #print( "popped: [%s] %s:%s"%( op, left_operand, right_operand) )
                 if op == u'|':
                     seq.append(StringGenerator.SequenceOR([left_operand,right_operand]))
                 elif op == u'&':
@@ -468,6 +479,8 @@ class StringGenerator(object):
             u'[ą-ż]{8}',
             u'\xe6\xbf\xe5, \xe9\xe5\xa9\xe5\xe5\xad\xe6\xaf\xe7\xe9\xba\xbc\xe6\xe6',
             ]
+
         for t in test_list:
-            print u"%s == %s"%(t,StringGenerator(t).render())
+            print(u"%s == %s"%(t,StringGenerator(t).render()))
+
         return 

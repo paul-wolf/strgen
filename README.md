@@ -20,24 +20,24 @@ will generate something like the following:
 Constructor
 -----------
 
-	import StringGenerator from strgen
-	StringGenerator(<template>)	    
+    from strgen import StringGenerator
+	sg = StringGenerator(<template>)
 
 Usage:
 
-	import StringGenerator from strgen
+    from strgen import StringGenerator
 	StringGenerator(<template>).render()
 
 or:
 
-	import StringGenerator from strgen
+	from strgen import StringGenerator
 	StringGenerator(<template>).render_list(10,unique=True)
 
 The latter produces a list of 10 strings that are unique within the list.
 
 Example:
 
-    >>> import StringGenerator from strgen
+    >>> from strgen import StringGenerator
 	>>> StringGenerator('[\l\d]{4:18}&[\d]&[\p]').render()
 	u'Cde90uC{X6lWbOueT'
 
@@ -58,7 +58,7 @@ Example:
 
     abc
 
-Special characters need to be escaped with backslash `\\`.
+Special characters need to be escaped with backslash `\`.
 
 
 Character class: [\<class specification>]
@@ -172,7 +172,7 @@ Special Characters, Escaping and Errors
 
 There are fewer special characters than regular expressions: 
 
-    [](){}|&-
+    [](){}|&-$
 
 They can be used as literals by escaping with backslash. All other
 characters are treated as literals.  The hyphen is only special in a
