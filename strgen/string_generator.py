@@ -29,20 +29,24 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Original author: paul.wolf@yewleaf.com
+
 """
 import random
 import string
 
-__version__ = '1.1.2'
+__version__ = '0.1.3'
 
 try:
     # try to use cryptographically strong methods
     sr = random.SystemRandom()
-    randint = random.sr.randint
-    choice = random.sr.choice
-    sample = random.sr.sample
-    shuffle = random.sr.shuffle
-except:
+    randint = sr.randint
+    choice = sr.choice
+    sample = sr.sample
+    shuffle = sr.shuffle
+except Exception as e:
+    #print(e)
     # fall back if necessary
     randint = random.randint
     choice = random.choice
@@ -79,14 +83,6 @@ class StringGenerator(object):
         
     This generates 10 unique strings containing digits. Each will be 10 characters in length.
 
-    License
-    -------
-    Released under the BSD license. 
-
-
-    Original Author: paul.wolf@yewleaf.com
-
-
     """
     class SyntaxError(Exception):
         pass
@@ -111,7 +107,7 @@ class StringGenerator(object):
     }
     string_code_help = {
         u'd':u'digits',
-        u'w':u'\'_\' + ascii_letters + digits',
+        u'w':u"_" + 'ascii_letters + digits',
         u'W':u'whitespace + punctuation',
         u's':u'whitespace',
         u'p':u'punctuation',
@@ -219,6 +215,9 @@ class StringGenerator(object):
 
         def __unicode__(self):
             return u'%s:%s:%s'%(self.start,self.cnt,self.chars)
+
+        def __str__(self):
+            return '%s:%s:%s'%(self.start,self.cnt,self.chars)
 
     def __init__(self,pattern,uaf=10):
         try:
@@ -425,9 +424,13 @@ class StringGenerator(object):
         return self.seq.render()
 
     def dump(self):
+        import sys
         u"""Print the parse tree and then call render for an example."""
         if not self.seq:
             self.seq = self.getSequence()
+        print("StringGenerator version: %s"%(__version__))
+        print("Python version: %s"%sys.version)
+        print("Random method provider class: %s"%randint.im_class.__name__)
         self.seq.dump()
         return self.render()
 
@@ -479,6 +482,8 @@ class StringGenerator(object):
             u'[ą-ż]{8}',
             u'\xe6\xbf\xe5, \xe9\xe5\xa9\xe5\xe5\xad\xe6\xaf\xe7\xe9\xba\xbc\xe6\xe6',
             ]
+
+        print("random method provider class: %s"%randint.im_class.__name__)
 
         for t in test_list:
             print(u"%s == %s"%(t,StringGenerator(t).render()))
