@@ -3,13 +3,19 @@ strgen
 
 Generate randomized strings of characters using a template.
 
-This Python module enables a user to generate test data, unique ids,
-passwords, vouchers or other randomized data very quickly using a
-template language. The template language is superficially similar to
-regular expressions but instead of defining how to match or capture
-strings, it defines how to generate randomized strings.
+Generate test data, unique ids,passwords, vouchers or other randomized
+data very quickly using a template language. The template language is
+superficially similar to regular expressions but instead of defining
+how to match or capture strings, it defines how to generate randomized
+strings. A very simple invocation to produce a random string with word
+characters and digits of 10 characters length:
 
-An example template for generating a strong password:
+	>>> import strgen
+	>>> strgen.StringGenerator("[\d\w]{10}").render()
+	'sj5ic8vebF'
+
+The template uses short forms similar to those of the Python Standard Library
+recular expressions. An example template for generating a strong password:
 
      [\w\p\d]{20}
 
@@ -17,7 +23,16 @@ will generate something like the following:
 
      P{:45Ec5$3)2!I68x`{6
 
-Usage:
+Installation
+------------
+
+Install as standard for Python packages from PyPi:
+
+    pip install StringGenerator
+
+
+Usage
+-----
 
     from strgen import StringGenerator
 	StringGenerator(<template>).render()
@@ -25,7 +40,7 @@ Usage:
 or to produce a list of unique strings:
 
 	from strgen import StringGenerator
-	StringGenerator(<template>).render_list(10,unique=True)
+	StringGenerator(<template>).render_list(<length>,unique=True)
 
 Example:
 
@@ -262,9 +277,8 @@ Character Sets
 Character sets used for backslashed character codes are exactly the
 Python character sets from the string package. While the module is
 designed to work on pre- Python 3, we use only those member variables
-from string that are present in Python 3. This avoids the
-locale-dependent sets of characters.
-
+from the `string` module that are present in Python 3. This avoids the
+locale-dependent sets of characters in Python 2.x.
 
 Randomness Methods
 ------------------
@@ -325,10 +339,10 @@ unnecessarily complex task.
 
 The equivalent using the strgen package is the following:
 
-    from strgen import StringGenerator as sg
-    sg('[\u\d]{10}').render()
+    from strgen import StringGenerator as SG
+    SG('[\u\d]{10}').render()
     
-strgen is far more compact, flexible and feature-rich than using the
+`strgen` is far more compact, flexible and feature-rich than using the
 standard solution:
 
 * It tries to use a better entropy mechanism and falls back gracefully
@@ -336,10 +350,6 @@ standard solution:
 
 * The user can easily modify the specification (template) with minimal
   effort without the fear of introducing hard-to-test code paths.
-
-* Modifications to the template are simpler and far less error prone
-  than writing all the code necessary to implement changes in a random
-  string specification
 
 * It covers a broader set of use cases: unique ids, persistent unique
   filenames, test data, etc.
@@ -349,7 +359,7 @@ standard solution:
 
 * It supports unicode.
 
-* It works on Python 2.6, 2.7 and 3. 
+* It works on Python 2.6, 2.7 and 3.x. 
 
 * It proposes a standard way of expressing common requirements, like
   "a password shall have 6 - 20 characters of which at least one must

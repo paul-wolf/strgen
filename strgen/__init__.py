@@ -1,1 +1,1 @@
-from string_generator import StringGenerator
+from .string_generator import StringGenerator

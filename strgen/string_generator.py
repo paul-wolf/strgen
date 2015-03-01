@@ -36,7 +36,10 @@ Original author: paul.wolf@yewleaf.com
 import random
 import string
 
-__version__ = '0.1.3'
+__version__ = '0.1.5'
+__author__ = 'Paul Wolf'
+__license__ = 'BSD'
+#__all__ = ['StringGenerator', '']
 
 try:
     # try to use cryptographically strong methods
@@ -221,12 +224,13 @@ class StringGenerator(object):
 
     def __init__(self,pattern,uaf=10):
         try:
-            self.pattern = unicode(pattern)
+            self.pattern = unicode(pattern)            
         except NameError:
             self.pattern = pattern
         self.seq = None
         self.index = -1
         self.unique_attempts_factor = uaf
+        self.seq = self.getSequence()
 
     def current(self):
         if self.index < len(self.pattern):
@@ -416,11 +420,11 @@ class StringGenerator(object):
             unicode. The generated string.
 
         """
-        if not self.pattern:
-            raise Exception(u"No pattern specified")
-        if not self.seq:
-            # parse the template
-            self.seq = self.getSequence()
+        #if not self.pattern:
+        #    raise Exception(u"No pattern specified")
+        #if not self.seq:
+        #    # parse the template
+        #    self.seq = self.getSequence()
         return self.seq.render()
 
     def dump(self):
