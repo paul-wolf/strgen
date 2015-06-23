@@ -36,7 +36,7 @@ Original author: paul.wolf@yewleaf.com
 import random
 import string
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 __author__ = 'Paul Wolf'
 __license__ = 'BSD'
 #__all__ = ['StringGenerator', '']
@@ -49,7 +49,6 @@ try:
     sample = sr.sample
     shuffle = sr.shuffle
 except Exception as e:
-    #print(e)
     # fall back if necessary
     randint = random.randint
     choice = random.choice
@@ -88,6 +87,11 @@ class StringGenerator(object):
 
     """
     class SyntaxError(Exception):
+        """Catch syntax errors."""
+        pass
+
+    class UniquenessError(Exception):
+        """Catch when template can't generator required list count."""
         pass
 
 
@@ -460,7 +464,7 @@ class StringGenerator(object):
             if i >= cnt:
                 break
             if total_attempts > cnt*self.unique_attempts_factor:
-                raise Exception(u"couldn't satisfy uniqueness")
+                raise StringGenerator.UniquenessError(u"couldn't satisfy uniqueness")
             s = self.render()
             if unique:
                 if not s in rendered_list:
@@ -472,25 +476,4 @@ class StringGenerator(object):
             total_attempts += 1
         return rendered_list
 
-    @staticmethod
-    def tests():
-        u"""Run tests"""
-
-        test_list = [
-            u"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
-            u"[a-z\d\d\d\d]{8}",
-            u"[\l]{6:10}&[\d]{2}",
-            u"([a-z]{4}|[0-9]{9})",
-            u"[\d]&[\c]&[\w\p]{6}",
-            u'idzie wąż wąską dróżką',
-            u'[ą-ż]{8}',
-            u'\xe6\xbf\xe5, \xe9\xe5\xa9\xe5\xe5\xad\xe6\xaf\xe7\xe9\xba\xbc\xe6\xe6',
-            ]
-
-        print("random method provider class: %s"%randint.im_class.__name__)
-
-        for t in test_list:
-            print(u"%s == %s"%(t,StringGenerator(t).render()))
-
-        return 
 
