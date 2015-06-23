@@ -15,7 +15,7 @@ characters and digits of 10 characters length:
 	'sj5ic8vebF'
 
 The template uses short forms similar to those of the Python Standard Library
-recular expressions. An example template for generating a strong password:
+regular expressions. An example template for generating a strong password:
 
      [\w\p\d]{20}
 
