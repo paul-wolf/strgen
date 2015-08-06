@@ -1,15 +1,39 @@
 strgen
 ======
 
-Generate randomized strings of characters using a template.
+Generate test data, unique ids,passwords, vouchers or other randomized
+textual data very quickly using a template language. The template
+language is superficially similar to regular expressions but instead of
+defining how to match or capture strings, it defines how to generate
+randomized strings. A very simple invocation to produce a random string
+with word characters and digits of 10 characters length:
 
-This Python module enables a user to generate test data, unique ids,
-passwords, vouchers or other randomized data very quickly using a
-template language. The template language is superficially similar to
-regular expressions but instead of defining how to match or capture
-strings, it defines how to generate randomized strings.
+::
 
-An example template for generating a strong password:
+    >>> import strgen
+    >>> strgen.StringGenerator("[\d\w]{10}").render()
+    'sj5ic8vebF'
+
+The purpose of this module is to save the Python developer from having
+to write verbose code around the same pattern every time to generate
+passwords, keys, tokens, test data, etc. of this sort:
+
+::
+
+      my_secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(30))
+
+that is:
+
+1. Hard to read
+2. Hard to safely change quickly
+3. Doesn't use safe encryption standards
+4. Doesn't provide the implied minimal guarantees of character occurance
+5. Hard to track back to requirements ("must be between x and y in
+   length and have characters from sets Q, R and S")
+
+The template uses short forms similar to those of the Python Standard
+Library regular expressions. An example template for generating a strong
+password:
 
 ::
 
@@ -21,7 +45,24 @@ will generate something like the following:
 
      P{:45Ec5$3)2!I68x`{6
 
-Usage:
+You can also generate useful test data, like fake emails with plenty of
+variation:
+
+::
+
+     [\c]{10}.[\c]{5:10}@[\c]{3:12}.(com|net|org)
+
+Installation
+------------
+
+Install as standard for Python packages from PyPi:
+
+::
+
+    pip install StringGenerator
+
+Usage
+-----
 
 ::
 
@@ -33,7 +74,7 @@ or to produce a list of unique strings:
 ::
 
     from strgen import StringGenerator
-    StringGenerator(<template>).render_list(10,unique=True)
+    StringGenerator(<template>).render_list(<length>,unique=True)
 
 Example:
 
@@ -49,7 +90,7 @@ following:
 -  *Literal text* (for example: ``UID``)
 -  *Character class* (for example: ``[a-z\s]``)
 -  *Group*, a combination of literals and character classes, possibly
-   separated by operators and using parenthesis where appropriate (for
+   separated by operators and using parentheses where appropriate (for
    example: ``(UID[\d]{4}&[\w]{4})``)
 
 In more detail:
@@ -198,7 +239,7 @@ produces something like:
 
      00488926xyyxxy
 
-In otherwords, the digits occur first in sequence as expected. This is
+In other words, the digits occur first in sequence as expected. This is
 equivalent to this:
 
 ::
@@ -212,7 +253,7 @@ There are fewer special characters than regular expressions:
 
 ::
 
-    [](){}|&-$
+    [](){}|&-:$
 
 They can be used as literals by escaping with backslash. All other
 characters are treated as literals. The hyphen is only special in a
@@ -289,7 +330,7 @@ possibly produce the required number of unique strings. For instance:
 
 ::
 
-     StringGenerator("[0-1]").render_list(100,unique=True)
+     StringGenerator("[0-1]").render_list(100, unique=True)
 
 This will generate an exception but not before attempting to generate
 the strings.
@@ -312,8 +353,8 @@ Character Sets
 Character sets used for backslashed character codes are exactly the
 Python character sets from the string package. While the module is
 designed to work on pre- Python 3, we use only those member variables
-from string that are present in Python 3. This avoids the
-locale-dependent sets of characters.
+from the ``string`` module that are present in Python 3. This avoids the
+locale-dependent sets of characters in Python 2.x.
 
 Randomness Methods
 ------------------
@@ -352,7 +393,7 @@ The output looks something like the following:
                   zzz
                   yyy
     u'zMXGPwyxE9a'
-                                                                                                                    
+                                                                        
 
 Rationale and Design Goals
 --------------------------
@@ -376,14 +417,14 @@ be a special character". The above solution then becomes much more
 complicated and changing the requirements is an error-prone and
 unnecessarily complex task.
 
-The equivalent using the strgen package is the following:
+The equivalent using the strgen package:
 
 ::
 
-    from strgen import StringGenerator as sg
-    sg('[\u\d]{10}').render()
+    from strgen import StringGenerator as SG
+    SG('[\u\d]{10}').render()
 
-strgen is far more compact, flexible and feature-rich than using the
+``strgen`` is far more compact, flexible and feature-rich than using the
 standard solution:
 
 -  It tries to use a better entropy mechanism and falls back gracefully
@@ -392,19 +433,15 @@ standard solution:
 -  The user can easily modify the specification (template) with minimal
    effort without the fear of introducing hard-to-test code paths.
 
--  Modifications to the template are simpler and far less error prone
-   than writing all the code necessary to implement changes in a random
-   string specification
-
 -  It covers a broader set of use cases: unique ids, persistent unique
    filenames, test data, etc.
 
--  The template syntax is very easy to learn for anyone familiar with
-   regular expressions while being much simpler.
+-  The template syntax is easy to learn for anyone familiar with regular
+   expressions while being much simpler.
 
 -  It supports unicode.
 
--  It works on Python 2.6, 2.7 and 3.
+-  It works on Python 2.6, 2.7 and 3.x.
 
 -  It proposes a standard way of expressing common requirements, like "a
    password shall have 6 - 20 characters of which at least one must be a
