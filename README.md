@@ -1,8 +1,6 @@
 strgen
 ======
 
-Generate randomized strings of characters using a template.
-
 Generate test data, unique ids,passwords, vouchers or other randomized
 data very quickly using a template language. The template language is
 superficially similar to regular expressions but instead of defining
@@ -13,6 +11,13 @@ characters and digits of 10 characters length:
 	>>> import strgen
 	>>> strgen.StringGenerator("[\d\w]{10}").render()
 	'sj5ic8vebF'
+
+The purpose of this module is to save the Python developer from having to
+
+
+
+
+
 
 The template uses short forms similar to those of the Python Standard Library
 regular expressions. An example template for generating a strong password:

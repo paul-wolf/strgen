@@ -23,6 +23,8 @@ class TestStringGenerator(unittest.TestCase):
     def test_unicode(self):
         test_list = [
             u'idzie wąż wąską dróżką',
+            u'༣ཁངཱུངྵ',
+            u'ᚠᚳᛦᛰ',
             u'[ą-ż]{8}',
             u'\xe6\xbf\xe5, \xe9\xe5\xa9\xe5\xe5\xad\xe6\xaf\xe7\xe9\xba\xbc\xe6\xe6',
         ]
@@ -39,8 +41,14 @@ class TestStringGenerator(unittest.TestCase):
             u"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
             u"[a-z\d\d\d\d]{8}",
             u"[\l]{6:10}&[\d]{2}",
+            u"[\l]{6-10}&[\d]{2}",  # support both hyphen and colon for ranges
             u"([a-z]{4}|[0-9]{9})",
             u"[\d]&[\c]&[\w\p]{6}",
+            u"[\w\p]",
+            u"[\w\p]{6}",
+            u"[\w\p]{-6},"
+            u"[\w\p]{:6}",
+            u"[\w\p]{0:6}",
         ]
 
         for t in test_list:
@@ -57,6 +65,7 @@ class TestStringGenerator(unittest.TestCase):
             u"((foo)(bar)))", # extra parens
             u"foo&", # binary operator error
             u"|foo", # binary operator error
+            u"[\w]{10:}", # cannot have open range in quantifier
         ]
         for t in test_list:
             # using 2.7 specific context manager here

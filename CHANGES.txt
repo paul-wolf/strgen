@@ -1,3 +1,10 @@
+Changes 0.1.7
+------------------------------------
+- Fixed bug not allowing ']' as literal
+- Now allowing '-' as range separator in quantifier to be more like regex
+- Added some more tests
+- Improved README
+
 Changes 0.1.6
 ------------------------------------
 - Added unit tests

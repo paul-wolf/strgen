@@ -36,7 +36,7 @@ Original author: paul.wolf@yewleaf.com
 import random
 import string
 
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 __author__ = 'Paul Wolf'
 __license__ = 'BSD'
 #__all__ = ['StringGenerator', '']
@@ -261,18 +261,22 @@ class StringGenerator(object):
         bracket = self.next()
         # we should only be here because that was a bracket
         if not bracket  == u'{':
-            raise Exception(u"parse error getting count")
+            raise Exception(u"parse error getting quantifier")
         d = u''
         digits = u'0'
         while True:
             d = self.next()
             if not d:
-                raise Exception(u"unexpected end of input getting count")
-            if d == u':':
+                raise Exception(u"unexpected end of input getting quantifier")
+            if d == u':' or d == u'-':
                 start = int(digits)
                 digits = u'0'
                 continue
             if d == u'}':
+                if self.last() in u':-':
+                    # this happens if the user thinks the quantifier 
+                    # behaves like python slice notation in allowing uppper range to be open
+                    raise StringGenerator.SyntaxError(u"quantifier range must be closed")
                 break
             if d.isnumeric():
                 digits += d
@@ -318,7 +322,7 @@ class StringGenerator(object):
                     chars += self.string_code[c]
             elif c and c not in self.meta_chars:
                 chars += c
-            if c == u']':
+            if c == u']' and not self.last() == u"\\":
                 if self.lookahead() == u'{':
                     [start,cnt] = self.getQuantifier()
                 else:
@@ -385,6 +389,8 @@ class StringGenerator(object):
                 op = c
             else:
                 if c in self.meta_chars and not self.last() == u"\\":
+                    print 'index: ', self.index
+                    print 'last: ', self.last()
                     raise StringGenerator.SyntaxError(u"Un-escaped special character: %s"%c)
 
             #print( op,len(seq) )
