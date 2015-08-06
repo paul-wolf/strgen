@@ -17,8 +17,8 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render()
-            print(u"%s == %s"%(t,result))
-            self.assertTrue(not result == None)
+            print(u"%s == %s" % (t, result))
+            self.assertTrue(not result is None)
 
     def test_unicode(self):
         test_list = [
@@ -31,9 +31,9 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render()
-            print(u"%s == %s"%(t,result))
+            print(u"%s == %s" % (t, result))
             # TODO: must be a better test than testing for None
-            self.assertTrue(not result == None)
+            self.assertTrue(not result is None)
 
     def test_list(self):
         list_length = 10
@@ -53,19 +53,19 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render_list(list_length)
-            print "Pattern [%s] list length == %s" % (t,len(result))
-            self.assertTrue(type(result)==list and len(result)==list_length)
+            print "Pattern [%s] list length == %s" % (t, len(result))
+            self.assertTrue(isinstance(result, list) and len(result) == list_length)
 
     def test_syntax_exception(self):
         """Make sure syntax errors in template are caught."""
         test_list = [
-            u"[a-z]{a}", # not a valid quantifier
-            u"[a-]", # invalid class range
-            u"[[1-9]", # unescaped chars
-            u"((foo)(bar)))", # extra parens
-            u"foo&", # binary operator error
-            u"|foo", # binary operator error
-            u"[\w]{10:}", # cannot have open range in quantifier
+            u"[a-z]{a}",  # not a valid quantifier
+            u"[a-]",  # invalid class range
+            u"[[1-9]",  # unescaped chars
+            u"((foo)(bar)))",  # extra parens
+            u"foo&",  # binary operator error
+            u"|foo",  # binary operator error
+            u"[\w]{10:}",  # cannot have open range in quantifier
         ]
         for t in test_list:
             # using 2.7 specific context manager here
@@ -78,7 +78,7 @@ class TestStringGenerator(unittest.TestCase):
         """Make sure we throw an exception if we can't generate list."""
         with self.assertRaises(StringGenerator.UniquenessError) as context:
             t = "[123]"
-            StringGenerator(t).render_list(100,unique=True)
+            StringGenerator(t).render_list(100, unique=True)
         print "Exception %s: %s" % (t, context.exception)
 
 if __name__ == '__main__':

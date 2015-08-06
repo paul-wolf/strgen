@@ -1,10 +1,10 @@
 #!python
 from distutils.core import setup
 
-description='Generate randomized strings of characters using a template'
+description = 'Generate randomized strings of characters using a template'
 
 # try:
-#     long_description = pypandoc.convert('README.md', 'rst')    
+#     long_description = pypandoc.convert('README.md', 'rst')
 # except (IOError, OSError):
 #     print('check that you have installed pandoc properly and that README.md exists!')
 #     long_description = description
@@ -19,7 +19,7 @@ setup(name='StringGenerator',
       author_email='paul.wolf@yewleaf.com',
       version='0.1.6',
       #version = module.__version__,
-      packages=['strgen',],
+      packages=['strgen', ],
       license='BSD',
       long_description=long_description,
       classifiers=[
@@ -33,6 +33,5 @@ setup(name='StringGenerator',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
           'Topic :: Software Development :: Libraries :: Python Modules',
-          ],
-  )
-
+      ],
+      )

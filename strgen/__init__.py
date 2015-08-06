@@ -61,6 +61,7 @@ try:
 except NameError:
     unichr = chr
 
+
 class StringGenerator(object):
     u"""Generate a randomized string of characters using a template.
 
@@ -79,10 +80,10 @@ class StringGenerator(object):
 
     The latter produces a list of 10 strings that are unique within the list.
 
-    Example: 
+    Example:
 
        StringGenerator("[\d]{10}").render_list(10,unique=True)
-        
+
     This generates 10 unique strings containing digits. Each will be 10 characters in length.
 
     """
@@ -94,74 +95,71 @@ class StringGenerator(object):
         """Catch when template can't generator required list count."""
         pass
 
-
     meta_chars = u'[]{}()|&$'
-    mytab = u" "*4
+    mytab = u" " * 4
 
     string_code = {
-        u'd':string.digits,
-        u'w':'_'+string.ascii_letters+string.digits,
-        u'W':string.whitespace+string.punctuation,
-        u's':string.whitespace,
-        u'p':string.punctuation,
-        u'l':string.ascii_letters,
-        u'u':string.ascii_uppercase,
-        u'c':string.ascii_lowercase,
-        u'o':string.octdigits,
-        u'h':string.hexdigits,
-        u'r':string.printable,
-        #u'a':string.ascii_letters,
+        u'd': string.digits,
+        u'w': '_' + string.ascii_letters + string.digits,
+        u'W': string.whitespace + string.punctuation,
+        u's': string.whitespace,
+        u'p': string.punctuation,
+        u'l': string.ascii_letters,
+        u'u': string.ascii_uppercase,
+        u'c': string.ascii_lowercase,
+        u'o': string.octdigits,
+        u'h': string.hexdigits,
+        u'r': string.printable,
+        # u'a':string.ascii_letters,
     }
     string_code_help = {
-        u'd':u'digits',
-        u'w':u"_" + 'ascii_letters + digits',
-        u'W':u'whitespace + punctuation',
-        u's':u'whitespace',
-        u'p':u'punctuation',
-        u'l':u'ascii_letters',
-        u'u':u'ascii_uppercase',
-        u'c':u'ascii_lowercase',
-        u'o':u'octdigits',
-        u'h':u'hexdigits',
-        u'r':u'printable',
-        #u'a':u'ascii_letters',
+        u'd': u'digits',
+        u'w': u"_" + 'ascii_letters + digits',
+        u'W': u'whitespace + punctuation',
+        u's': u'whitespace',
+        u'p': u'punctuation',
+        u'l': u'ascii_letters',
+        u'u': u'ascii_uppercase',
+        u'c': u'ascii_lowercase',
+        u'o': u'octdigits',
+        u'h': u'hexdigits',
+        u'r': u'printable',
+        # u'a':u'ascii_letters',
     }
 
-
     class StringNode(object):
-        u"""The abstract class for all nodes"""        
+        u"""The abstract class for all nodes"""
 
         def render(self):
             raise Exception(u"abstract class")
 
         def dump(self):
             raise Exception(u"abstract class")
-        
+
     class Sequence():
         u""" Render a sequence of nodes from the template. """
 
-        def __init__(self,seq):
+        def __init__(self, seq):
             u"""seq is a list"""
-            self.seq = seq # list of StringNodes
+            self.seq = seq  # list of StringNodes
 
         def render(self):
-            return u''.join([ x.render() for x in self.seq])
+            return u''.join([x.render() for x in self.seq])
 
-        def dump(self,level=-1):
-            print((StringGenerator.mytab*level) + u"sequence:")
+        def dump(self, level=-1):
+            print((StringGenerator.mytab * level) + u"sequence:")
             for s in self.seq:
                 s.dump(level + 1)
-
 
     class SequenceOR(Sequence):
         u"""Randomly choose from operands. """
 
         def render(self):
             # return just one of the items in self.seq
-            return self.seq[randint(0,len(self.seq)-1)].render()
-        
-        def dump(self,level=-1):
-            print( (StringGenerator.mytab*level) + u"OR" )
+            return self.seq[randint(0, len(self.seq) - 1)].render()
+
+        def dump(self, level=-1):
+            print((StringGenerator.mytab * level) + u"OR")
             for s in self.seq:
                 s.dump(level + 1)
 
@@ -170,12 +168,12 @@ class StringGenerator(object):
 
         def render(self):
             # return a permutation of all characters in seq
-            l = list(u''.join([ x.render() for x in self.seq]))
+            l = list(u''.join([x.render() for x in self.seq]))
             shuffle(l)
             return u''.join(l)
 
-        def dump(self,level=-1):
-            print( (StringGenerator.mytab*level) + u"AND" )
+        def dump(self, level=-1):
+            print((StringGenerator.mytab * level) + u"AND")
 
             for s in self.seq:
                 s.dump(level + 1)
@@ -183,25 +181,25 @@ class StringGenerator(object):
     class Literal(StringNode):
         u""" Render a literal string. """
 
-        def __init__(self,chars):
-            self.literal = chars # a literal string
+        def __init__(self, chars):
+            self.literal = chars  # a literal string
 
         def render(self):
             return self.literal
 
-        def dump(self,level=0):
-            print( (StringGenerator.mytab*level) + self.literal )
+        def dump(self, level=0):
+            print((StringGenerator.mytab * level) + self.literal)
 
         def __unicode__(self):
             return self.literal
 
         def __str__(self):
             return str(self)
-                            
+
     class CharacterSet(StringNode):
         u""" Render a random combination from a set of characters. """
 
-        def __init__(self,chars,start,cnt):
+        def __init__(self, chars, start, cnt):
             self.chars = chars
             try:
                 self.start = int(start)
@@ -212,23 +210,23 @@ class StringGenerator(object):
         def render(self):
             cnt = 1
             if self.start > -1:
-                cnt = randint(self.start,self.cnt)
+                cnt = randint(self.start, self.cnt)
             else:
                 cnt = self.cnt
-            return u''.join(self.chars[randint(0,len(self.chars)-1)] for x in range(cnt))
+            return u''.join(self.chars[randint(0, len(self.chars) - 1)] for x in range(cnt))
 
-        def dump(self,level=0):
-            print( StringGenerator.mytab*level+str(self) )
+        def dump(self, level=0):
+            print(StringGenerator.mytab * level + str(self))
 
         def __unicode__(self):
-            return u'%s:%s:%s'%(self.start,self.cnt,self.chars)
+            return u'%s:%s:%s' % (self.start, self.cnt, self.chars)
 
         def __str__(self):
-            return '%s:%s:%s'%(self.start,self.cnt,self.chars)
+            return '%s:%s:%s' % (self.start, self.cnt, self.chars)
 
-    def __init__(self,pattern,uaf=10):
+    def __init__(self, pattern, uaf=10):
         try:
-            self.pattern = unicode(pattern)            
+            self.pattern = unicode(pattern)
         except NameError:
             self.pattern = pattern
         self.seq = None
@@ -246,21 +244,21 @@ class StringGenerator(object):
         return self.current()
 
     def lookahead(self):
-        if self.index+1 < len(self.pattern):
-            return self.pattern[self.index+1]
+        if self.index + 1 < len(self.pattern):
+            return self.pattern[self.index + 1]
         return None
 
     def last(self):
         if self.index == 0:
             return None
-        return self.pattern[self.index-1]
+        return self.pattern[self.index - 1]
 
     def getQuantifier(self):
         start = -1
         cnt = 1
         bracket = self.next()
         # we should only be here because that was a bracket
-        if not bracket  == u'{':
+        if not bracket == u'{':
             raise Exception(u"parse error getting quantifier")
         d = u''
         digits = u'0'
@@ -274,7 +272,7 @@ class StringGenerator(object):
                 continue
             if d == u'}':
                 if self.last() in u':-':
-                    # this happens if the user thinks the quantifier 
+                    # this happens if the user thinks the quantifier
                     # behaves like python slice notation in allowing uppper range to be open
                     raise StringGenerator.SyntaxError(u"quantifier range must be closed")
                 break
@@ -282,21 +280,20 @@ class StringGenerator(object):
                 digits += d
             else:
                 raise StringGenerator.SyntaxError(u"non-digit in count")
-        return [start,int(digits)]
+        return [start, int(digits)]
 
-    def getCharacterRange(self,f,t):
+    def getCharacterRange(self, f, t):
         chars = u''
         # support z-a as a range
         if not ord(f) < ord(t):
             tmp = f
             f = t
             t = tmp
-        if (ord(t) - ord(f)) > 10000: # protect against large sets ?
-            raise Exception(u"character range too large: %s - %s: %s"(f,t,ord(t)-ord(f)))
-        for c in range(ord(f),ord(t)+1):
+        if (ord(t) - ord(f)) > 10000:  # protect against large sets ?
+            raise Exception(u"character range too large: %s - %s: %s"(f, t, ord(t) - ord(f)))
+        for c in range(ord(f), ord(t) + 1):
             chars += unichr(c)
         return chars
-
 
     def getCharacterSet(self):
         # index on [
@@ -308,11 +305,11 @@ class StringGenerator(object):
             c = self.next()
             if self.lookahead() == u'-':
                 f = c
-                self.next() # skip hyphen
-                c = self.next() # get far range
+                self.next()  # skip hyphen
+                c = self.next()  # get far range
                 if not c or (c in self.meta_chars):
                     raise StringGenerator.SyntaxError(u"unexpected end of class range")
-                chars += self.getCharacterRange(f,c)
+                chars += self.getCharacterRange(f, c)
             elif c == u'\\':
                 if self.lookahead() in self.meta_chars:
                     c = self.next()
@@ -324,17 +321,17 @@ class StringGenerator(object):
                 chars += c
             if c == u']' and not self.last() == u"\\":
                 if self.lookahead() == u'{':
-                    [start,cnt] = self.getQuantifier()
+                    [start, cnt] = self.getQuantifier()
                 else:
                     start = -1
                     cnt = 1
                 break
             if c in self.meta_chars and not self.last() == u"\\":
-                raise StringGenerator.SyntaxError(u"Un-escaped character in class definition: %s"%c)
+                raise StringGenerator.SyntaxError(u"Un-escaped character in class definition: %s" % c)
             if not c:
                 break
 
-        return StringGenerator.CharacterSet(chars,start,cnt)
+        return StringGenerator.CharacterSet(chars, start, cnt)
 
     def getLiteral(self):
         u""" Get a sequence of non-special characters"""
@@ -357,8 +354,7 @@ class StringGenerator(object):
             c = self.next()
         return StringGenerator.Literal(chars)
 
-
-    def getSequence(self,level=0):
+    def getSequence(self, level=0):
         u"""Get a sequence of nodes."""
 
         seq = []
@@ -375,7 +371,7 @@ class StringGenerator(object):
             elif c == u'[' and not self.last() == u'\\':
                 seq.append(self.getCharacterSet())
             elif c == u'(' and not self.last() == u'\\':
-                seq.append(self.getSequence(level+1))
+                seq.append(self.getSequence(level + 1))
             elif c == u')' and not self.last() == u'\\':
                 # end of this sequence
                 if level == 0:
@@ -391,21 +387,21 @@ class StringGenerator(object):
                 if c in self.meta_chars and not self.last() == u"\\":
                     print 'index: ', self.index
                     print 'last: ', self.last()
-                    raise StringGenerator.SyntaxError(u"Un-escaped special character: %s"%c)
+                    raise StringGenerator.SyntaxError(u"Un-escaped special character: %s" % c)
 
             #print( op,len(seq) )
             if op and not left_operand:
                 if not seq or len(seq) < 1:
-                    raise StringGenerator.SyntaxError(u"Operator: %s with no left operand"%op)
+                    raise StringGenerator.SyntaxError(u"Operator: %s with no left operand" % op)
                 left_operand = seq.pop()
             elif op and len(seq) >= 1 and left_operand:
                 right_operand = seq.pop()
 
                 #print( "popped: [%s] %s:%s"%( op, left_operand, right_operand) )
                 if op == u'|':
-                    seq.append(StringGenerator.SequenceOR([left_operand,right_operand]))
+                    seq.append(StringGenerator.SequenceOR([left_operand, right_operand]))
                 elif op == u'&':
-                    seq.append(StringGenerator.SequenceAND([left_operand,right_operand]))
+                    seq.append(StringGenerator.SequenceAND([left_operand, right_operand]))
 
                 op = u''
                 left_operand = None
@@ -413,7 +409,7 @@ class StringGenerator(object):
 
         # check for syntax errors
         if op:
-            raise StringGenerator.SyntaxError(u"Operator: %s with no right operand"%op)
+            raise StringGenerator.SyntaxError(u"Operator: %s with no right operand" % op)
         if level > 0 and not sequence_closed:
             # it means we are finishing a non-first-level sequence without closing parens
             raise StringGenerator.SyntaxError(u"Missing closing parenthesis")
@@ -430,9 +426,9 @@ class StringGenerator(object):
             unicode. The generated string.
 
         """
-        #if not self.pattern:
+        # if not self.pattern:
         #    raise Exception(u"No pattern specified")
-        #if not self.seq:
+        # if not self.seq:
         #    # parse the template
         #    self.seq = self.getSequence()
         return self.seq.render()
@@ -442,14 +438,13 @@ class StringGenerator(object):
         u"""Print the parse tree and then call render for an example."""
         if not self.seq:
             self.seq = self.getSequence()
-        print("StringGenerator version: %s"%(__version__))
-        print("Python version: %s"%sys.version)
-        print("Random method provider class: %s"%randint.im_class.__name__)
+        print("StringGenerator version: %s" % (__version__))
+        print("Python version: %s" % sys.version)
+        print("Random method provider class: %s" % randint.im_class.__name__)
         self.seq.dump()
         return self.render()
 
-
-    def render_list(self,cnt,unique=False):
+    def render_list(self, cnt, unique=False):
         u"""Return a list of generated strings.
 
         Args:
@@ -457,7 +452,7 @@ class StringGenerator(object):
             unique (bool): whether to make entries unique
 
         Returns:
-            list. 
+            list.
 
         We keep track of total attempts because a template may
         specify something impossible to attain, like [1-9]{} with cnt==1000
@@ -469,7 +464,7 @@ class StringGenerator(object):
         while True:
             if i >= cnt:
                 break
-            if total_attempts > cnt*self.unique_attempts_factor:
+            if total_attempts > cnt * self.unique_attempts_factor:
                 raise StringGenerator.UniquenessError(u"couldn't satisfy uniqueness")
             s = self.render()
             if unique:
@@ -481,5 +476,3 @@ class StringGenerator(object):
                 i += 1
             total_attempts += 1
         return rendered_list
-
-
