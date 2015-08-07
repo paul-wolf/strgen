@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 u"""
-Copyright (c) 2013, Yewleaf Ltd.
+Copyright (c) 2013-2015, Yewleaf Ltd.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ Original author: paul.wolf@yewleaf.com
 import random
 import string
 
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 __author__ = 'Paul Wolf'
 __license__ = 'BSD'
 #__all__ = ['StringGenerator', '']
@@ -92,10 +92,10 @@ class StringGenerator(object):
         pass
 
     class UniquenessError(Exception):
-        """Catch when template can't generator required list count."""
+        """Catch when template can't generate required list count."""
         pass
 
-    meta_chars = u'[]{}()|&$'
+    meta_chars = u'[]{}()|&$\\-'
     mytab = u" " * 4
 
     string_code = {
@@ -296,14 +296,28 @@ class StringGenerator(object):
         return chars
 
     def getCharacterSet(self):
-        # index on [
+        u"""Get a character set with individual members or ranges.
+
+        Current index is on '[', the start of the character set.
+
+        """
+        
         chars = u''
         c = None
         cnt = 1
         start = 0
+
         while True:
+            escaped_slash = False
             c = self.next()
-            if self.lookahead() == u'-':
+            # print "pattern   : ", self.pattern
+            # print "C         : ", c
+            # print "Slash     : ", c == u'\\'
+            # print 'chars     : ', chars
+            # print 'index     : ', self.index
+            # print 'last      : ', self.last()
+            # print 'lookahead : ', self.lookahead()
+            if self.lookahead() == u'-' and not c == u'\\':
                 f = c
                 self.next()  # skip hyphen
                 c = self.next()  # get far range
@@ -314,19 +328,20 @@ class StringGenerator(object):
                 if self.lookahead() in self.meta_chars:
                     c = self.next()
                     chars += c
+                    continue
                 elif self.lookahead() in self.string_code:
                     c = self.next()
                     chars += self.string_code[c]
             elif c and c not in self.meta_chars:
                 chars += c
-            if c == u']' and not self.last() == u"\\":
+            if c == u']': 
                 if self.lookahead() == u'{':
                     [start, cnt] = self.getQuantifier()
                 else:
                     start = -1
                     cnt = 1
                 break
-            if c in self.meta_chars and not self.last() == u"\\":
+            if c and c in self.meta_chars and not self.last() == u"\\":
                 raise StringGenerator.SyntaxError(u"Un-escaped character in class definition: %s" % c)
             if not c:
                 break
@@ -385,8 +400,6 @@ class StringGenerator(object):
                 op = c
             else:
                 if c in self.meta_chars and not self.last() == u"\\":
-                    print 'index: ', self.index
-                    print 'last: ', self.last()
                     raise StringGenerator.SyntaxError(u"Un-escaped special character: %s" % c)
 
             #print( op,len(seq) )

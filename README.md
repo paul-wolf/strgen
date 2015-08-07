@@ -1,7 +1,7 @@
 strgen
 ======
 
-Generate test data, unique ids,passwords, vouchers or other randomized
+Generate test data, unique ids, passwords, vouchers or other randomized
 textual data very quickly using a template language. The template
 language is superficially similar to regular expressions but instead
 of defining how to match or capture strings, it defines how to
@@ -20,22 +20,30 @@ keys, tokens, test data, etc. of this sort:
 
 that is:
 
-1. Hard to read
-2. Hard to safely change quickly
-3. Doesn't use safe encryption standards
-4. Doesn't provide the implied minimal guarantees of character
-   occurance
-5. Hard to track back to requirements ("must be between x and y in
-   length and have characters from sets Q, R and S")
+1. Hard to read even at this simplistic level.
 
-The template uses short forms similar to those of the Python Standard Library
-regular expressions. An example template for generating a strong password:
+2. Hard to safely change quickly. Even modest additions to the requirements need unreasonably verbose solutions.
+
+3. Doesn't use safe encryption standards.
+
+4. Doesn't provide the implied minimal guarantees of character
+   occurance.
+
+5. Hard to track back to requirements ("must be between x and y in
+   length and have characters from sets Q, R and S").
+
+The template uses short forms similar to those of regular
+expressions. An example template for generating a strong password:
 
      [\w\p\d]{20}
 
 will generate something like the following: 
 
      P{:45Ec5$3)2!I68x`{6
+
+Guarantee at least two "special" characters in a string: 
+
+     [\w\p]{10}&[\p]{2}
 
 You can also generate useful test data, like fake emails with plenty of variation:
 
@@ -210,14 +218,24 @@ Special Characters, Escaping and Errors
 
 There are fewer special characters than regular expressions: 
 
-    [](){}|&-:$
+    []{}()|&$\-
 
 They can be used as literals by escaping with backslash. All other
 characters are treated as literals.  The hyphen is only special in a
-character class, when it appears within square brackets. The template 
-parser tries to raise exceptions when syntax errors are made, but not 
-every error will be caught, like having space between a class and
-quantifier. 
+character class, when it appears within square brackets.
+
+One special case is the escape character itself, backslash '\'. To
+escape this, you will need at least two backslashes to escape it. So,
+three alltogether: one for Python's string interpretation and one for
+StringGenerator's escaping. If for some exotic reason you want two
+literal backslashes in a row, you need a total of eight
+backslashes. The foregoing presupposes the template is a string in a
+file. If you are using the template in a shell command line or shell
+script, you'll need to make any changes required by your specific shell.
+
+The template parser tries to raise exceptions when syntax errors are
+made, but not every error will be caught, like having space between a
+class and quantifier.
 
 Spaces
 ------
@@ -240,6 +258,10 @@ sensible defaults:
     [\w]{8}    # generate word characters of exactly 8 in length
     [a-z0-9]   # generate a-z and digits, just one as there is no quantifier
     [a-z0-9_!@]  # you can combine ranges with individual characters
+
+As of version 0.1.7, quantifier ranges can alternatively be specified with a hyphen:
+
+    [\w]{4-8}
 
 Here's an example of generating a syntactically valid but, hopefully,
 spurious email address:
@@ -264,14 +286,13 @@ string:
     [\l\d\d\d\d]
 
 This will provide a string that is three times more likely to contain
-a digit than the previous example:
+a digit than the previous example.
 
-    [\l\d]
 
 Uniqueness 
 ---------- 
 
-When using the `unique=True` flag, it's possible the generator cannot
+When using the `unique=True` flag in the `render_list()` method, it's possible the generator cannot
 possibly produce the required number of unique strings. For instance:
 
 	 StringGenerator("[0-1]").render_list(100, unique=True)
@@ -409,6 +430,10 @@ License
 -------
 Released under the BSD license. 
 
+Acknowledgements
+----------------
+
+Thanks to Robert LeBlanc who caught some import errors in escaping special characters. 
 
 Original Author: paul.wolf@yewleaf.com
 

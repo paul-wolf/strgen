@@ -9,6 +9,7 @@ class TestStringGenerator(unittest.TestCase):
         """Test various templates."""
         test_list = [
             u"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
+            u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]{4}",
             u"[a-z\d\d\d\d]{8}",
             u"[\l]{6:10}&[\d]{2}",
             u"([a-z]{4}|[0-9]{9})",
