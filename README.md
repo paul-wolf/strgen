@@ -433,7 +433,7 @@ Released under the BSD license.
 Acknowledgements
 ----------------
 
-Thanks to Robert LeBlanc who caught some import errors in escaping special characters. 
+Thanks to Robert LeBlanc who caught some important errors in escaping special characters. 
 
 Original Author: paul.wolf@yewleaf.com
 
