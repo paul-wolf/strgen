@@ -73,16 +73,20 @@ class TestStringGenerator(unittest.TestCase):
         for t in test_list:
             # using 2.7 specific context manager here
             # so, test won't work on < 2.7 but everything else should do
-            with self.assertRaises(StringGenerator.SyntaxError) as context:
-                StringGenerator(t).render()
-            print("Exception {}: {}".format(t, context.exception))
+            #with self.assertRaises(StringGenerator.SyntaxError) as context:
+            #    StringGenerator(t).render()
+            self.assertRaises(StringGenerator.SyntaxError, lambda: StringGenerator(t).render())
+            
+            #print("Exception {}: {}".format(t, context.exception))
 
     def test_uniqueness_error(self):
         """Make sure we throw an exception if we can't generate list."""
-        with self.assertRaises(StringGenerator.UniquenessError) as context:
-            t = "[123]"
-            StringGenerator(t).render_list(100, unique=True)
-        print("Exception {}: {}".format(t, context.exception))
+        #with self.assertRaises(StringGenerator.UniquenessError) as context:
+        #    t = "[123]"
+        #    StringGenerator(t).render_list(100, unique=True)
+        t = "[123]"
+        self.assertRaises(StringGenerator.UniquenessError, lambda: StringGenerator(t).render_list(100, unique=True))
+        #print("Exception {}: {}".format(t, context.exception))
 
 if __name__ == '__main__':
     unittest.main()
