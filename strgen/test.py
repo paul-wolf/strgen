@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import unittest
 from strgen import StringGenerator
+
 
 
 class TestStringGenerator(unittest.TestCase):
@@ -54,7 +56,7 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render_list(list_length)
-            print "Pattern [{}] list length == {}".format(t, len(result))
+            print("Pattern [{}] list length == {}".format(t, len(result)))
             self.assertTrue(isinstance(result, list) and len(result) == list_length)
 
     def test_syntax_exception(self):
@@ -73,14 +75,14 @@ class TestStringGenerator(unittest.TestCase):
             # so, test won't work on < 2.7 but everything else should do
             with self.assertRaises(StringGenerator.SyntaxError) as context:
                 StringGenerator(t).render()
-            print "Exception {}: {}".format(t, context.exception)
+            print("Exception {}: {}".format(t, context.exception))
 
     def test_uniqueness_error(self):
         """Make sure we throw an exception if we can't generate list."""
         with self.assertRaises(StringGenerator.UniquenessError) as context:
             t = "[123]"
             StringGenerator(t).render_list(100, unique=True)
-        print "Exception {}: {}".format(t, context.exception)
+        print("Exception {}: {}".format(t, context.exception))
 
 if __name__ == '__main__':
     unittest.main()

@@ -32,7 +32,7 @@
 
 # Original author: paul.wolf@yewleaf.com
 
-
+from __future__ import print_function
 import random
 import string
 
@@ -63,7 +63,7 @@ except NameError:
 
 
 class StringGenerator(object):
-    u"""Generate a randomized string of characters using a template.
+    '''Generate a randomized string of characters using a template.
 
     The purpose of this class is to generate a string of characters
     according to a template.  The template language is superficially
@@ -86,7 +86,8 @@ class StringGenerator(object):
 
     This generates 10 unique strings containing digits. Each will be 10 characters in length.
 
-    """
+    '''
+    
     class SyntaxError(Exception):
         """Catch syntax errors."""
         pass
@@ -128,7 +129,7 @@ class StringGenerator(object):
     }
 
     class StringNode(object):
-        u"""The abstract class for all nodes"""
+        '''The abstract class for all nodes'''
 
         def render(self):
             raise Exception(u"abstract class")
@@ -137,10 +138,11 @@ class StringGenerator(object):
             raise Exception(u"abstract class")
 
     class Sequence():
-        u""" Render a sequence of nodes from the template. """
+        '''Render a sequence of nodes from the template.'''
 
         def __init__(self, seq):
-            u"""seq is a list"""
+            '''seq is a list.'''
+            
             self.seq = seq  # list of StringNodes
 
         def render(self):
@@ -152,7 +154,7 @@ class StringGenerator(object):
                 s.dump(level + 1)
 
     class SequenceOR(Sequence):
-        u"""Randomly choose from operands. """
+        '''Randomly choose from operands.'''
 
         def render(self):
             # return just one of the items in self.seq
@@ -164,7 +166,7 @@ class StringGenerator(object):
                 s.dump(level + 1)
 
     class SequenceAND(Sequence):
-        u"""Render a permutation of characters from operands."""
+        '''Render a permutation of characters from operands.'''
 
         def render(self):
             # return a permutation of all characters in seq
@@ -179,7 +181,7 @@ class StringGenerator(object):
                 s.dump(level + 1)
 
     class Literal(StringNode):
-        u""" Render a literal string. """
+        '''Render a literal string.'''
 
         def __init__(self, chars):
             self.literal = chars  # a literal string
@@ -197,7 +199,7 @@ class StringGenerator(object):
             return str(self)
 
     class CharacterSet(StringNode):
-        u""" Render a random combination from a set of characters. """
+        '''Render a random combination from a set of characters.'''
 
         def __init__(self, chars, start, cnt):
             self.chars = chars
@@ -296,11 +298,11 @@ class StringGenerator(object):
         return chars
 
     def getCharacterSet(self):
-        u"""Get a character set with individual members or ranges.
+        '''Get a character set with individual members or ranges.
 
         Current index is on '[', the start of the character set.
 
-        """
+        '''
         
         chars = u''
         c = None
@@ -349,7 +351,7 @@ class StringGenerator(object):
         return StringGenerator.CharacterSet(chars, start, cnt)
 
     def getLiteral(self):
-        u""" Get a sequence of non-special characters"""
+        '''Get a sequence of non-special characters.'''
 
         # we are on the first non-special character
         chars = u''
@@ -370,7 +372,7 @@ class StringGenerator(object):
         return StringGenerator.Literal(chars)
 
     def getSequence(self, level=0):
-        u"""Get a sequence of nodes."""
+        '''Get a sequence of nodes.'''
 
         seq = []
         op = ''
@@ -430,7 +432,7 @@ class StringGenerator(object):
         return StringGenerator.Sequence(seq)
 
     def render(self):
-        u"""Produce a randomized string that fits the template/pattern.
+        '''Produce a randomized string that fits the template/pattern.
 
         Args:
             None
@@ -438,7 +440,8 @@ class StringGenerator(object):
         Returns:
             unicode. The generated string.
 
-        """
+        '''
+        
         # if not self.pattern:
         #    raise Exception(u"No pattern specified")
         # if not self.seq:
@@ -448,7 +451,7 @@ class StringGenerator(object):
 
     def dump(self):
         import sys
-        u"""Print the parse tree and then call render for an example."""
+        '''Print the parse tree and then call render for an example.'''
         if not self.seq:
             self.seq = self.getSequence()
         print("StringGenerator version: %s" % (__version__))
@@ -458,7 +461,7 @@ class StringGenerator(object):
         return self.render()
 
     def render_list(self, cnt, unique=False):
-        u"""Return a list of generated strings.
+        '''Return a list of generated strings.
 
         Args:
             cnt (int): length of list
@@ -470,7 +473,8 @@ class StringGenerator(object):
         We keep track of total attempts because a template may
         specify something impossible to attain, like [1-9]{} with cnt==1000
 
-        """
+        '''
+        
         rendered_list = []
         i = 0
         total_attempts = 0
