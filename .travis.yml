@@ -14,6 +14,8 @@ python:
 # we have no third-party dependencies
 
 # command to run tests
-script: strgen.test
+script: python -m strgen.test
+
+
 
 
