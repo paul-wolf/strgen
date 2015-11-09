@@ -36,7 +36,7 @@ from __future__ import print_function
 import random
 import string
 
-__version__ = '0.1.8'
+__version__ = '0.1.9'
 __author__ = 'Paul Wolf'
 __license__ = 'BSD'
 #__all__ = ['StringGenerator', '']

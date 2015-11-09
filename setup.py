@@ -3,12 +3,6 @@ from distutils.core import setup
 
 description = 'Generate randomized strings of characters using a template'
 
-# try:
-#     long_description = pypandoc.convert('README.md', 'rst')
-# except (IOError, OSError):
-#     print('check that you have installed pandoc properly and that README.md exists!')
-#     long_description = description
-
 with open('README.txt') as file:
     long_description = file.read()
 
@@ -17,7 +11,7 @@ setup(name='StringGenerator',
       url='https://github.com/paul-wolf/strgen',
       author='Paul Wolf',
       author_email='paul.wolf@yewleaf.com',
-      version='0.1.8',
+      version='0.1.9',
       #version = module.__version__,
       packages=['strgen', ],
       license='BSD',
@@ -27,11 +21,11 @@ setup(name='StringGenerator',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: BSD License',
           'Programming Language :: Python',
-          'Programming Language :: Python :: 2',
           'Programming Language :: Python :: 2.6',
           'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
           'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       )

@@ -1,3 +1,10 @@
+Changes 0.1.9
+------------------------------------
+- Fixed numerous non-2.7 bugs
+- Works on 3.0 - 3.5 except 3.2
+- Tests work on Python 2.6 now
+- Now tested with travis.ci
+
 Changes 0.1.7
 ------------------------------------
 - Fixed bug not allowing ']' as literal

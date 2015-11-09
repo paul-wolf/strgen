@@ -1,5 +1,7 @@
-strgen
-======
+StringGenerator
+===============
+
+|Build Status|
 
 Generate test data, unique ids, passwords, vouchers or other randomized
 textual data very quickly using a template language. The template
@@ -466,7 +468,7 @@ standard solution:
 
 -  It supports unicode.
 
--  It works on Python 2.6, 2.7 and 3.x.
+-  It works on Python 2.6, 2.7 and 3.3, 3.4 and 3.5 (not 3.2).
 
 -  It proposes a standard way of expressing common requirements, like "a
    password shall have 6 - 20 characters of which at least one must be a
@@ -502,7 +504,10 @@ Released under the BSD license.
 Acknowledgements
 ----------------
 
-Thanks to Robert LeBlanc who caught some import errors in escaping
+Thanks to Robert LeBlanc who caught some important errors in escaping
 special characters.
 
 Original Author: paul.wolf@yewleaf.com
+
+.. |Build Status| image:: https://travis-ci.org/paul-wolf/strgen.svg?branch=master
+   :target: https://travis-ci.org/paul-wolf/strgen
