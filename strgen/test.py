@@ -8,7 +8,7 @@ from strgen import StringGenerator
 class TestStringGenerator(unittest.TestCase):
 
     def test_string_generator(self):
-        """Test various templates."""
+        '''Test various templates.'''
         test_list = [
             u"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
             u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]{4}",
@@ -20,7 +20,7 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render()
-            print(u"%s == %s" % (t, result))
+            print(u"{0} == {1}".format(t, result))
             self.assertTrue(not result is None)
 
     def test_unicode(self):
@@ -34,7 +34,7 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render()
-            print(u"%s == %s" % (t, result))
+            print(u"{0} == {1}".format(t, result))
             # TODO: must be a better test than testing for None
             self.assertTrue(not result is None)
 
@@ -56,11 +56,11 @@ class TestStringGenerator(unittest.TestCase):
 
         for t in test_list:
             result = StringGenerator(t).render_list(list_length)
-            print("Pattern [{}] list length == {}".format(t, len(result)))
+            print("Pattern [{0}] list length == {1}".format(t, len(result)))
             self.assertTrue(isinstance(result, list) and len(result) == list_length)
 
     def test_syntax_exception(self):
-        """Make sure syntax errors in template are caught."""
+        '''Make sure syntax errors in template are caught.'''
         test_list = [
             u"[a-z]{a}",  # not a valid quantifier
             u"[a-]",  # invalid class range
@@ -77,16 +77,13 @@ class TestStringGenerator(unittest.TestCase):
             #    StringGenerator(t).render()
             self.assertRaises(StringGenerator.SyntaxError, lambda: StringGenerator(t).render())
             
-            #print("Exception {}: {}".format(t, context.exception))
+            #print("Exception {0}: {1}".format(t, context.exception))
 
     def test_uniqueness_error(self):
-        """Make sure we throw an exception if we can't generate list."""
-        #with self.assertRaises(StringGenerator.UniquenessError) as context:
-        #    t = "[123]"
-        #    StringGenerator(t).render_list(100, unique=True)
-        t = "[123]"
+        '''Make sure we throw an exception if we can't generate list.'''
+        t = u'[123]'
         self.assertRaises(StringGenerator.UniquenessError, lambda: StringGenerator(t).render_list(100, unique=True))
-        #print("Exception {}: {}".format(t, context.exception))
+
 
 if __name__ == '__main__':
     unittest.main()
