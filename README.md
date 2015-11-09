@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/paul-wolf/strgen.svg?branch=master)](https://travis-ci.org/paul-wolf/strgen)
+
 strgen
 ======
 
