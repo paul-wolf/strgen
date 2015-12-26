@@ -190,7 +190,7 @@ class StringGenerator(object):
             return self.literal
 
         def dump(self, level=0):
-            print((StringGenerator.mytab * level) + self.literal)
+            print("[literal]", (StringGenerator.mytab * level) + self.literal)
 
         def __unicode__(self):
             return self.literal
@@ -218,7 +218,7 @@ class StringGenerator(object):
             return u''.join(self.chars[randint(0, len(self.chars) - 1)] for x in range(cnt))
 
         def dump(self, level=0):
-            print(StringGenerator.mytab * level + str(self))
+            print("[charset]", StringGenerator.mytab * level + str(self))
 
         def __unicode__(self):
             return u'%s:%s:%s' % (self.start, self.cnt, self.chars)
@@ -243,6 +243,8 @@ class StringGenerator(object):
 
     def next(self):
         self.index += 1
+        if self.current() == u"\\":
+            self.index += 1
         return self.current()
 
     def lookahead(self):
@@ -353,6 +355,8 @@ class StringGenerator(object):
     def getLiteral(self):
         '''Get a sequence of non-special characters.'''
 
+        non_literals = u"[]()&|"
+        
         # we are on the first non-special character
         chars = u''
         c = self.current()
@@ -362,11 +366,11 @@ class StringGenerator(object):
                 if c:
                     chars += c
                 continue
-            elif not c or (c in self.meta_chars):
+            elif not c or (c in non_literals):
                 break
             else:
                 chars += c
-            if self.lookahead() and self.lookahead() in self.meta_chars:
+            if self.lookahead() and self.lookahead() in non_literals:                
                 break
             c = self.next()
         return StringGenerator.Literal(chars)
@@ -456,7 +460,9 @@ class StringGenerator(object):
             self.seq = self.getSequence()
         print("StringGenerator version: %s" % (__version__))
         print("Python version: %s" % sys.version)
-        print("Random method provider class: %s" % randint.im_class.__name__)
+        #print("Random method provider class: %s" % randint.im_class.__name__)
+        print("Random method provider class: {}".format(type(randint.__self__)))
+        
         self.seq.dump()
         return self.render()
 

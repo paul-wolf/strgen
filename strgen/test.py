@@ -11,11 +11,46 @@ class TestStringGenerator(unittest.TestCase):
         '''Test various templates.'''
         test_list = [
             u"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
-            u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]{4}",
+            #u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]{4}",
             u"[a-z\d\d\d\d]{8}",
             u"[\l]{6:10}&[\d]{2}",
             u"([a-z]{4}|[0-9]{9})",
             u"[\d]&[\c]&[\w\p]{6}",
+        ]
+
+        for t in test_list:
+            result = StringGenerator(t).render()
+            print(u"{0} == {1}".format(t, result))
+            self.assertTrue(not result is None)
+
+    def test_escaping(self):
+        test_list = [
+            u"[\[\]]",
+            u"\{\}",
+            u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]{4}",
+        ]
+        
+        for t in test_list:
+
+            try:
+                result = StringGenerator(t).render()
+                self.assertTrue(not result is None)
+            except Exception as e:
+                print("ERROR, pattern: {}, {}".format(t,e))
+                
+            
+
+    def test_dump(self):
+        """make sure dump method works."""
+        StringGenerator("[\w]{8}").dump()
+        
+        
+    def test_literals(self):
+        '''Test various literals.'''
+        test_list = [
+            u"hel-lo[\w]{8}",
+            u"hello:[\w]{8}",            
+
         ]
 
         for t in test_list:
