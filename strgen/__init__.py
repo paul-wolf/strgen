@@ -458,7 +458,8 @@ class StringGenerator(object):
             self.seq = self.getSequence()
         print("StringGenerator version: %s" % (__version__))
         print("Python version: %s" % sys.version)
-        print("Random method provider class: %s" % randint.im_class.__name__)
+        # this doesn't work anymore in p3
+        # print("Random method provider class: %s" % randint.im_class.__name__)
         self.seq.dump()
         return self.render()
 
