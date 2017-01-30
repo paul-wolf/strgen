@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import absolute_import
 import unittest
-from strgen import StringGenerator
-
-
+from __init__ import StringGenerator
 
 class TestStringGenerator(unittest.TestCase):
 
@@ -11,7 +11,7 @@ class TestStringGenerator(unittest.TestCase):
         '''Test various templates.'''
         test_list = [
             u"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
-            u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]{4}",
+            u"[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@\\\]OC",
             u"[a-z\d\d\d\d]{8}",
             u"[\l]{6:10}&[\d]{2}",
             u"([a-z]{4}|[0-9]{9})",
@@ -83,7 +83,35 @@ class TestStringGenerator(unittest.TestCase):
         '''Make sure we throw an exception if we can't generate list.'''
         t = u'[123]'
         self.assertRaises(StringGenerator.UniquenessError, lambda: StringGenerator(t).render_list(100, unique=True))
+        
+    def test_escaping(self):
+        test_list = [
+            "[\[\]]",
+            "\{\}",
+            "[\[\]\(\)\{\}\&\|\-\$_+=;\'\"<>,.?:!#%^`~*@]{10}",
+        ]
+
+        for t in test_list:
+            result = StringGenerator(t).render()
+            self.assertTrue(not result is None)
+
+    def test_literals(self):
+        '''Test various literals.'''
+        test_list = [
+            u"hel-lo[\w]{8}",
+            u"hello:[\w]{8}",
+            "-hello-[\w]{8}",
+        ]
+
+        for t in test_list:
+            result = StringGenerator(t).render()
+            self.assertTrue(not result is None)
+
+    def test_dump(self):
+        """make sure dump method works."""
+        StringGenerator("[\w]{8}").dump()
 
 
+                
 if __name__ == '__main__':
     unittest.main()

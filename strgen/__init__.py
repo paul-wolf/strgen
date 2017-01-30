@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
 # Copyright (c) 2013-2015, Yewleaf Ltd.
 # All rights reserved.
@@ -32,7 +35,6 @@
 
 # Original author: paul.wolf@yewleaf.com
 
-from __future__ import print_function
 import random
 import string
 
@@ -96,7 +98,7 @@ class StringGenerator(object):
         """Catch when template can't generate required list count."""
         pass
 
-    meta_chars = u'[]{}()|&$\\-'
+    meta_chars = u'[]{}()|&$'
     mytab = u" " * 4
 
     string_code = {
