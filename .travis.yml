@@ -13,8 +13,8 @@ python:
 # install: "pip install -r requirements.txt"
 # we have no third-party dependencies
 
-# command to run tests
-script: python -m strgen.test
+script:
+  python strgen/test.py
 
 
 
