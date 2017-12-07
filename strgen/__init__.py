@@ -463,7 +463,7 @@ class StringGenerator(object):
         self.seq.dump()
         return self.render()
 
-    def render_list(self, cnt, unique=False):
+    def render_list(self, cnt, unique=False, progress_callback=None):
         '''Return a list of generated strings.
 
         Args:
@@ -495,4 +495,9 @@ class StringGenerator(object):
                 rendered_list.append(s)
                 i += 1
             total_attempts += 1
+
+            # Optionally trigger the progress indicator to inform others about our progress
+            if progress_callback and callable(progress_callback):
+                progress_callback(i, cnt)
+
         return rendered_list

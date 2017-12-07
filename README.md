@@ -309,6 +309,22 @@ n x 10 where n is the requested length of the list. Therefore, taking
 the above example, the generator will attempt to generate the unique
 list of 0's and 1's 100 x 10 = 1000 times before giving up.
 
+
+Progress
+--------
+
+When using the `progress_callback` parameter of the `render_list()` method,
+it's possible to inform others about the progress of string generation.
+This is especially useful when generating a large number of strings.
+
+The callback function obtains two int parameters: `(current, total)`,
+which define the current progress and the total amount of requested
+strings.
+
+By using that, callers of `render_list()` are able to implement a progress indicator
+suitable for informing end users about the progress of string generation.
+
+
 Unicode
 -------
 
@@ -427,6 +443,15 @@ This package is designed with the following goals in mind:
   developers to quickly pick up the template syntax.
 
 * Support non-ASCII languages (unicode).
+
+
+Testing
+-------
+For running the unit tests, you might want to try:
+
+    pip install pytest
+    pytest strgen/test.py --verbose
+
 
 License
 -------

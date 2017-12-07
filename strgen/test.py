@@ -60,6 +60,25 @@ class TestStringGenerator(unittest.TestCase):
             print("Pattern [{0}] list length == {1}".format(t, len(result)))
             self.assertTrue(isinstance(result, list) and len(result) == list_length)
 
+    def test_list_progress(self):
+        """Check if the progress indicator actually works"""
+
+        list_length = 10
+
+        progress_states = []
+        def progress_callback(current, total):
+            progress_state = u'{current}/{total}'.format(**locals())
+            progress_states.append(progress_state)
+
+        StringGenerator(u"[a-z\d\d\d\d]{8}").render_list(list_length, progress_callback=progress_callback)
+
+        # Length of list of progress states should match length of requested strings
+        self.assertTrue(len(progress_states) == list_length)
+
+        # Check the first and the last item for the sake of completeness
+        self.assertEqual(progress_states[0], u'1/10')
+        self.assertEqual(progress_states[-1], u'10/10')
+
     def test_syntax_exception(self):
         '''Make sure syntax errors in template are caught.'''
         test_list = [
