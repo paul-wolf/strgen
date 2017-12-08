@@ -461,6 +461,7 @@ Acknowledgements
 ----------------
 
 Thanks to Robert LeBlanc who caught some important errors in escaping special characters. 
+Thanks to Andreas Motl for the progress counter.
 
 Original Author: paul.wolf@yewleaf.com
 

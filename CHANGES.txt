@@ -1,3 +1,13 @@
+Changes 0.2.1
+------------------------------------
+
+Merged progress counter from Andreas Motl.
+
+Changes 0.2.0
+------------------------------------
+
+Fixed literal processing and better tests.
+
 Changes 0.1.9
 ------------------------------------
 - Fixed numerous non-2.7 bugs
