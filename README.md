@@ -164,6 +164,25 @@ Using a character class and no quantifier will result in a quantifier of 1. Thus
 
 will result always in either `a`, `b`, or `c`. 
 
+Variable Substitution
+---------------------
+
+We provide the `${varname}` syntax to enable any value to be returned. `varname` must be provided as a keyword argument to the `render()` or `render_list()` methods. You can use a list, function, generator. Here's an example using a list:
+
+    StringGenerator('William of ${names}').render(names=['Orange', 'Normandy', 'Ockham'])
+
+Or use a range converted to a list:
+
+    StringGenerator('You have ${chances} chances').render(chances=list(range(1000)))
+
+Or using a function:
+
+    StringGenerator('William of ${names}').render(names=lambda: random.choice(['Orange', 'Normandy', 'Ockham']))
+
+You can obviously pass any callable or generator that might, for instance, randomly choose a value from a database, if that is what you want.
+
+Note there is a subtle difference between a callable and list type. If you use a `list`, StringGenerator picks an item from the list for you, randomly. If you use a callable, you have to yourself pick and return a single item that will be converted to a string. So, if you pass a function that returns a list, the entire list will be inserted as a string. 
+
 Group:  (\<group specification>)
 --------------------------------
 

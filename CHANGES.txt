@@ -1,6 +1,11 @@
 Changes 0.2.1
 ------------------------------------
 
+Added variable substitutions with lists and callables.
+
+Changes 0.2.1
+------------------------------------
+
 Merged progress counter from Andreas Motl.
 
 Changes 0.2.0

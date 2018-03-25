@@ -15,7 +15,7 @@ python:
 # we have no third-party dependencies
 
 script:
-  python strgen/test.py
+  python strgen/tests.py
 
 
 
