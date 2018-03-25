@@ -37,8 +37,9 @@ from __future__ import absolute_import
 
 import random
 import string
+import types
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 __author__ = 'Paul Wolf'
 __license__ = 'BSD'
 #__all__ = ['StringGenerator', '']
@@ -63,6 +64,20 @@ try:
 except NameError:
     unichr = chr
 
+def isidentifier(ident):
+    """Determines if string is valid Python identifier.
+
+    This only works for Python 3, otherwise, it is always True.
+
+    """
+
+    try:
+        if not ident.isidentifier():
+            return False
+    except:
+        pass
+    
+    return True
 
 class StringGenerator(object):
     '''Generate a randomized string of characters using a template.
@@ -78,13 +93,13 @@ class StringGenerator(object):
 
     or:
 
-       StringGenerator(<template>).render_list(10,unique=True)
+       StringGenerator(<template>).render_list(10, unique=True)
 
     The latter produces a list of 10 strings that are unique within the list.
 
     Example:
 
-       StringGenerator("[\d]{10}").render_list(10,unique=True)
+       StringGenerator("[\d]{10}").render_list(10, unique=True)
 
     This generates 10 unique strings containing digits. Each will be 10 characters in length.
 
@@ -133,7 +148,7 @@ class StringGenerator(object):
     class StringNode(object):
         '''The abstract class for all nodes'''
 
-        def render(self):
+        def render(self, **kwargs):
             raise Exception(u"abstract class")
 
         def dump(self):
@@ -143,12 +158,11 @@ class StringGenerator(object):
         '''Render a sequence of nodes from the template.'''
 
         def __init__(self, seq):
-            '''seq is a list.'''
-            
+            '''seq is a list.'''            
             self.seq = seq  # list of StringNodes
 
-        def render(self):
-            return u''.join([x.render() for x in self.seq])
+        def render(self, **kwargs):
+            return u''.join([x.render(**kwargs) for x in self.seq])
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + u"sequence:")
@@ -158,9 +172,9 @@ class StringGenerator(object):
     class SequenceOR(Sequence):
         '''Randomly choose from operands.'''
 
-        def render(self):
+        def render(self, **kwargs):
             # return just one of the items in self.seq
-            return self.seq[randint(0, len(self.seq) - 1)].render()
+            return self.seq[randint(0, len(self.seq) - 1)].render(**kwargs)
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + u"OR")
@@ -170,9 +184,9 @@ class StringGenerator(object):
     class SequenceAND(Sequence):
         '''Render a permutation of characters from operands.'''
 
-        def render(self):
+        def render(self, **kwargs):
             # return a permutation of all characters in seq
-            l = list(u''.join([x.render() for x in self.seq]))
+            l = list(u''.join([x.render(**kwargs) for x in self.seq]))
             shuffle(l)
             return u''.join(l)
 
@@ -188,7 +202,7 @@ class StringGenerator(object):
         def __init__(self, chars):
             self.literal = chars  # a literal string
 
-        def render(self):
+        def render(self, **kwargs):
             return self.literal
 
         def dump(self, level=0):
@@ -198,7 +212,7 @@ class StringGenerator(object):
             return self.literal
 
         def __str__(self):
-            return str(self)
+            return self.literal
 
     class CharacterSet(StringNode):
         '''Render a random combination from a set of characters.'''
@@ -211,7 +225,7 @@ class StringGenerator(object):
             except Exception as e:
                 raise e
 
-        def render(self):
+        def render(self, **kwargs):
             cnt = 1
             if self.start > -1:
                 cnt = randint(self.start, self.cnt)
@@ -228,6 +242,32 @@ class StringGenerator(object):
         def __str__(self):
             return '%s:%s:%s' % (self.start, self.cnt, self.chars)
 
+    class Source(StringNode):
+        '''Render a string from a generator, list, function.'''
+
+        def __init__(self, source):
+            self.source = source
+
+        def render(self, **kwargs):
+            src =  kwargs.get(self.source) if self.source in kwargs else ''
+            if isinstance(src, list) or isinstance(src, set) or isinstance(src, tuple):
+                return str(random.choice(src))
+            elif callable(src):
+                return str(src())
+            elif isinstance(src, types.GeneratorType):
+                return str(next(src))
+            else:
+                return str(src)
+
+        def dump(self, level=0):
+            print((StringGenerator.mytab * level) + "$%s"%self.source)
+
+        def __unicode__(self):
+            return u"%s".format(str(self.source))
+
+        def __str__(self):
+            return str(self)
+
     def __init__(self, pattern, uaf=10):
         try:
             self.pattern = unicode(pattern)
@@ -242,6 +282,10 @@ class StringGenerator(object):
         if self.index < len(self.pattern):
             return self.pattern[self.index]
         return None
+    
+    def peek(self):
+        """Just an alias."""
+        return self.current()
 
     def next(self):
         self.index += 1
@@ -286,6 +330,28 @@ class StringGenerator(object):
                 raise StringGenerator.SyntaxError(u"non-digit in count")
         return [start, int(digits)]
 
+    
+    def getSource(self):
+        """Extract the identifier out of this construct: ${mylist}: mylist
+        """
+        bracket = self.next()
+        # we should only be here because that was a bracket
+        if not bracket == u'{':
+            raise Exception(u"parse error getting source")
+        c = u''
+        identifier = u''
+        while True:
+            c = self.next()
+            if not c:
+                raise Exception(u"unexpected end of input getting source")
+            elif c == u'}':
+                break
+            else:
+                identifier += c
+        if not identifier or not isidentifier(identifier):
+            raise StringGenerator.SyntaxError(u"not a valid identifier: %s"%identifier)
+        return StringGenerator.Source(identifier)
+    
     def getCharacterRange(self, f, t):
         chars = u''
         # support z-a as a range
@@ -354,7 +420,6 @@ class StringGenerator(object):
 
     def getLiteral(self):
         '''Get a sequence of non-special characters.'''
-
         # we are on the first non-special character
         chars = u''
         c = self.current()
@@ -387,6 +452,8 @@ class StringGenerator(object):
                 break
             if c and c not in self.meta_chars:
                 seq.append(self.getLiteral())
+            elif c and c == u'$' and self.lookahead() == u'{':
+                seq.append(self.getSource())
             elif c == u'[' and not self.last() == u'\\':
                 seq.append(self.getCharacterSet())
             elif c == u'(' and not self.last() == u'\\':
@@ -405,7 +472,7 @@ class StringGenerator(object):
             else:
                 if c in self.meta_chars and not self.last() == u"\\":
                     raise StringGenerator.SyntaxError(u"Un-escaped special character: %s" % c)
-
+            
             #print( op,len(seq) )
             if op and not left_operand:
                 if not seq or len(seq) < 1:
@@ -433,7 +500,7 @@ class StringGenerator(object):
 
         return StringGenerator.Sequence(seq)
 
-    def render(self):
+    def render(self, **kwargs):
         '''Produce a randomized string that fits the template/pattern.
 
         Args:
@@ -449,9 +516,9 @@ class StringGenerator(object):
         # if not self.seq:
         #    # parse the template
         #    self.seq = self.getSequence()
-        return self.seq.render()
+        return self.seq.render(**kwargs)
 
-    def dump(self):
+    def dump(self, **kwargs):
         import sys
         '''Print the parse tree and then call render for an example.'''
         if not self.seq:
@@ -461,9 +528,9 @@ class StringGenerator(object):
         # this doesn't work anymore in p3
         # print("Random method provider class: %s" % randint.im_class.__name__)
         self.seq.dump()
-        return self.render()
+        return self.render(**kwargs)
 
-    def render_list(self, cnt, unique=False, progress_callback=None):
+    def render_list(self, cnt, unique=False, progress_callback=None, **kwargs):
         '''Return a list of generated strings.
 
         Args:
@@ -486,7 +553,7 @@ class StringGenerator(object):
                 break
             if total_attempts > cnt * self.unique_attempts_factor:
                 raise StringGenerator.UniquenessError(u"couldn't satisfy uniqueness")
-            s = self.render()
+            s = self.render(**kwargs)
             if unique:
                 if not s in rendered_list:
                     rendered_list.append(s)
