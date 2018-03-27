@@ -175,13 +175,15 @@ Or use a range converted to a list:
 
     StringGenerator('You have ${chances} chances').render(chances=list(range(1000)))
 
+Note that in Python 2.x `range()` returns a list. In Python 3, `range()` returns a `range` type.
+
 Or using a function:
 
     StringGenerator('William of ${names}').render(names=lambda: random.choice(['Orange', 'Normandy', 'Ockham']))
 
 You can obviously pass any callable or generator that might, for instance, randomly choose a value from a database, if that is what you want.
 
-Note there is a subtle difference between a callable and list type. If you use a `list`, StringGenerator picks an item from the list for you, randomly. If you use a callable, you have to yourself pick and return a single item that will be converted to a string. So, if you pass a function that returns a list, the entire list will be inserted as a string. 
+Note there is a difference in handling between a callable and list type. If you use a `list`, StringGenerator picks an item from the list for you, randomly. If you use a callable, StringGenerator takes and inserts whatever is returned by the callable. The callable is required to do any randomisation if that is what the user wants. So, if you pass a function that returns a list, the entire list will be inserted as a string. 
 
 Group:  (\<group specification>)
 --------------------------------

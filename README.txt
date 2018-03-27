@@ -31,13 +31,13 @@ that is:
 2. Hard to safely change quickly. Even modest additions to the
    requirements need unreasonably verbose solutions.
 
-3. Doesn't use safe encryption standards.
+3. Doesn’t use safe encryption standards.
 
-4. Doesn't provide the implied minimal guarantees of character
+4. Doesn’t provide the implied minimal guarantees of character
    occurance.
 
-5. Hard to track back to requirements ("must be between x and y in
-   length and have characters from sets Q, R and S").
+5. Hard to track back to requirements (“must be between x and y in
+   length and have characters from sets Q, R and S”).
 
 The template uses short forms similar to those of regular expressions.
 An example template for generating a strong password:
@@ -52,7 +52,7 @@ will generate something like the following:
 
      P{:45Ec5$3)2!I68x`{6
 
-Guarantee at least two "special" characters in a string:
+Guarantee at least two “special” characters in a string:
 
 ::
 
@@ -152,7 +152,7 @@ Character Set Codes
 -------------------
 
 -  ``\W``: whitespace + punctuation
--  ``\a``: ascii\_letters
+-  ``\a``: ascii_letters
 -  ``\c``: lowercase
 -  ``\d``: digits
 -  ``\h``: hexdigits
@@ -197,6 +197,44 @@ Using a character class and no quantifier will result in a quantifier of
 
 will result always in either ``a``, ``b``, or ``c``.
 
+Variable Substitution
+---------------------
+
+We provide the ``${varname}`` syntax to enable any value to be returned.
+``varname`` must be provided as a keyword argument to the ``render()``
+or ``render_list()`` methods. You can use a list, function, generator.
+Here’s an example using a list:
+
+::
+
+    StringGenerator('William of ${names}').render(names=['Orange', 'Normandy', 'Ockham'])
+
+Or use a range converted to a list:
+
+::
+
+    StringGenerator('You have ${chances} chances').render(chances=list(range(1000)))
+
+Note that in Python 2.x ``range()`` returns a list. In Python 3,
+``range()`` returns a ``range`` type.
+
+Or using a function:
+
+::
+
+    StringGenerator('William of ${names}').render(names=lambda: random.choice(['Orange', 'Normandy', 'Ockham']))
+
+You can obviously pass any callable or generator that might, for
+instance, randomly choose a value from a database, if that is what you
+want.
+
+Note there is a difference in handling between a callable and list type.
+If you use a ``list``, StringGenerator picks an item from the list for
+you, randomly. If you use a callable, StringGenerator takes and inserts
+whatever is returned by the callable. The callable is required to do any
+randomisation if that is what the user wants. So, if you pass a function
+that returns a list, the entire list will be inserted as a string.
+
 Group: (<group specification>)
 ------------------------------
 
@@ -215,7 +253,7 @@ Shuffle Operator
 
 The binary ``&`` operator causes its operands to be combined and
 shuffled. This addresses the use case for many password requirements,
-such as, "at least 6 characters where 2 or more are digits". For
+such as, “at least 6 characters where 2 or more are digits”. For
 instance:
 
 ::
@@ -272,13 +310,13 @@ They can be used as literals by escaping with backslash. All other
 characters are treated as literals. The hyphen is only special in a
 character class, when it appears within square brackets.
 
-One special case is the escape character itself, backslash ''. To escape
+One special case is the escape character itself, backslash ’'. To escape
 this, you will need at least two backslashes to escape it. So, three
-alltogether: one for Python's string interpretation and one for
-StringGenerator's escaping. If for some exotic reason you want two
+alltogether: one for Python’s string interpretation and one for
+StringGenerator’s escaping. If for some exotic reason you want two
 literal backslashes in a row, you need a total of eight backslashes. The
 foregoing presupposes the template is a string in a file. If you are
-using the template in a shell command line or shell script, you'll need
+using the template in a shell command line or shell script, you’ll need
 to make any changes required by your specific shell.
 
 The template parser tries to raise exceptions when syntax errors are
@@ -318,7 +356,7 @@ with a hyphen:
 
     [\w]{4-8}
 
-Here's an example of generating a syntactically valid but, hopefully,
+Here’s an example of generating a syntactically valid but, hopefully,
 spurious email address:
 
 ::
@@ -329,7 +367,7 @@ The first name will be exactly 10 lower case characters; the last name
 will be 5-10 characters of lower case letters, each separated by either
 a dot or underscore. The domain name without domain class will be 3 - 12
 lower case characters and the domain type will be one of
-'.com','.net','.org'.
+‘.com’,‘.net’,‘.org’.
 
 The following will produce strings that tend to have more letters,
 because the set of letters (52) is larger than the set of digits (10):
@@ -352,7 +390,7 @@ Uniqueness
 ----------
 
 When using the ``unique=True`` flag in the ``render_list()`` method,
-it's possible the generator cannot possibly produce the required number
+it’s possible the generator cannot possibly produce the required number
 of unique strings. For instance:
 
 ::
@@ -366,14 +404,14 @@ The number of times the generator needs to render new strings to satisfy
 the list length and uniqueness is not determined at parse time. The
 maximum number of times it will try is by default n x 10 where n is the
 requested length of the list. Therefore, taking the above example, the
-generator will attempt to generate the unique list of 0's and 1's 100 x
+generator will attempt to generate the unique list of 0’s and 1’s 100 x
 10 = 1000 times before giving up.
 
 Progress
 --------
 
 When using the ``progress_callback`` parameter of the ``render_list()``
-method, it's possible to inform others about the progress of string
+method, it’s possible to inform others about the progress of string
 generation. This is especially useful when generating a large number of
 strings.
 
@@ -404,7 +442,7 @@ Randomness Methods
 
 The generator tries to use ``random.SystemRandom()`` for ``randint``,
 ``shuffle``, etc. It falls back to ``random.randint`` and associated
-methods if it can't use ``SystemRandom``.
+methods if it can’t use ``SystemRandom``.
 
 Debugging
 ---------
@@ -454,9 +492,9 @@ following code snippet:
 This generates a string that is 10 characters made of uppercase letters
 and digits. Unfortunately, this solution becomes cumbersome when
 real-world requirements are added. Take for example, the typical
-requirement to generate a password: "a password shall have 6 - 20
+requirement to generate a password: “a password shall have 6 - 20
 characters of which at least one must be a digit and at least one must
-be a special character". The above solution then becomes much more
+be a special character”. The above solution then becomes much more
 complicated and changing the requirements is an error-prone and
 unnecessarily complex task.
 
@@ -486,13 +524,13 @@ standard solution:
 
 -  It works on Python 2.6, 2.7 and 3.x.
 
--  It proposes a standard way of expressing common requirements, like "a
+-  It proposes a standard way of expressing common requirements, like “a
    password shall have 6 - 20 characters of which at least one must be a
-   digit and at least one must be a special character":
+   digit and at least one must be a special character”:
 
    ::
 
-        [\l\d]{4:18}&[\d]&[\p]
+          [\l\d]{4:18}&[\d]&[\p]
 
 This package is designed with the following goals in mind:
 
