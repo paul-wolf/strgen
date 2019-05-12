@@ -3,7 +3,7 @@ from distutils.core import setup
 
 description = 'Generate randomized strings of characters using a template'
 
-with open('README.txt') as file:
+with open('README.txt', encoding='utf-8') as file:
     long_description = file.read()
 
 setup(name='StringGenerator',
