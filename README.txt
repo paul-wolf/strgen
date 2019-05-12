@@ -36,8 +36,8 @@ that is:
 4. Doesn’t provide the implied minimal guarantees of character
    occurance.
 
-5. Hard to track back to requirements ('must be between x and y in
-   length and have characters from sets Q, R and S').
+5. Hard to track back to requirements (“must be between x and y in
+   length and have characters from sets Q, R and S”).
 
 The template uses short forms similar to those of regular expressions.
 An example template for generating a strong password:
@@ -52,7 +52,7 @@ will generate something like the following:
 
      P{:45Ec5$3)2!I68x`{6
 
-Guarantee at least two 'special' characters in a string:
+Guarantee at least two “special” characters in a string:
 
 ::
 
@@ -253,7 +253,7 @@ Shuffle Operator
 
 The binary ``&`` operator causes its operands to be combined and
 shuffled. This addresses the use case for many password requirements,
-such as, 'at least 6 characters where 2 or more are digits'. For
+such as, “at least 6 characters where 2 or more are digits”. For
 instance:
 
 ::
@@ -492,9 +492,9 @@ following code snippet:
 This generates a string that is 10 characters made of uppercase letters
 and digits. Unfortunately, this solution becomes cumbersome when
 real-world requirements are added. Take for example, the typical
-requirement to generate a password: 'a password shall have 6 - 20
+requirement to generate a password: “a password shall have 6 - 20
 characters of which at least one must be a digit and at least one must
-be a special character'. The above solution then becomes much more
+be a special character”. The above solution then becomes much more
 complicated and changing the requirements is an error-prone and
 unnecessarily complex task.
 
@@ -524,9 +524,9 @@ standard solution:
 
 -  It works on Python 2.6, 2.7 and 3.x.
 
--  It proposes a standard way of expressing common requirements, like 'a
+-  It proposes a standard way of expressing common requirements, like “a
    password shall have 6 - 20 characters of which at least one must be a
-   digit and at least one must be a special character':
+   digit and at least one must be a special character”:
 
    ::
 
