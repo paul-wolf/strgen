@@ -1,9 +1,10 @@
 #!python
+import io
 from distutils.core import setup
 
 description = 'Generate randomized strings of characters using a template'
 
-with open('README.txt', encoding='utf-8') as file:
+with io.open('README.txt', encoding='utf-8') as file:
     long_description = file.read()
 
 setup(name='StringGenerator',
@@ -11,7 +12,7 @@ setup(name='StringGenerator',
       url='https://github.com/paul-wolf/strgen',
       author='Paul Wolf',
       author_email='paul.wolf@yewleaf.com',
-      version='0.3.2',
+      version='0.3.3',
       # version = module.__version__,
       packages=['strgen', ],
       license='BSD',

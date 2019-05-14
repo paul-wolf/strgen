@@ -1,3 +1,8 @@
+Changes 0.3.3
+------------------------------------
+Use io.open in setup.py for 2.6 and 2.7 compatibility.
+
+
 Changes 0.3.2
 ------------------------------------
 Thanks to @wojtekwanczyk for improving Windows compatibility.
