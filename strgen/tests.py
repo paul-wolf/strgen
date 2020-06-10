@@ -129,6 +129,10 @@ class TestStringGenerator(unittest.TestCase):
             result = StringGenerator(t).render()
             self.assertTrue(not result is None)
 
+    def test_forward_slash(self):
+        result = StringGenerator(r"[\\]").render()
+        self.assertEqual(result, "\\")
+        
     def test_source(self):
         
         from countries import countries

@@ -371,7 +371,7 @@ class StringGenerator(object):
         Current index is on '[', the start of the character set.
 
         '''
-        
+        # import ipdb; ipdb.set_trace()        
         chars = u''
         c = None
         cnt = 1
@@ -380,13 +380,6 @@ class StringGenerator(object):
         while True:
             escaped_slash = False
             c = self.next()
-            # print "pattern   : ", self.pattern
-            # print "C         : ", c
-            # print "Slash     : ", c == u'\\'
-            # print 'chars     : ', chars
-            # print 'index     : ', self.index
-            # print 'last      : ', self.last()
-            # print 'lookahead : ', self.lookahead()
             if self.lookahead() == u'-' and not c == u'\\':
                 f = c
                 self.next()  # skip hyphen
@@ -395,6 +388,10 @@ class StringGenerator(object):
                     raise StringGenerator.SyntaxError(u"unexpected end of class range")
                 chars += self.getCharacterRange(f, c)
             elif c == u'\\':
+                if self.lookahead() == u'\\':
+                    c = self.next()
+                    chars += c
+                    continue
                 if self.lookahead() in self.meta_chars:
                     c = self.next()
                     chars += c
@@ -421,6 +418,7 @@ class StringGenerator(object):
     def getLiteral(self):
         '''Get a sequence of non-special characters.'''
         # we are on the first non-special character
+
         chars = u''
         c = self.current()
         while True:
@@ -472,8 +470,7 @@ class StringGenerator(object):
             else:
                 if c in self.meta_chars and not self.last() == u"\\":
                     raise StringGenerator.SyntaxError(u"Un-escaped special character: %s" % c)
-            
-            #print( op,len(seq) )
+
             if op and not left_operand:
                 if not seq or len(seq) < 1:
                     raise StringGenerator.SyntaxError(u"Operator: %s with no left operand" % op)
@@ -481,7 +478,6 @@ class StringGenerator(object):
             elif op and len(seq) >= 1 and left_operand:
                 right_operand = seq.pop()
 
-                #print( "popped: [%s] %s:%s"%( op, left_operand, right_operand) )
                 if op == u'|':
                     seq.append(StringGenerator.SequenceOR([left_operand, right_operand]))
                 elif op == u'&':
@@ -510,12 +506,6 @@ class StringGenerator(object):
             unicode. The generated string.
 
         '''
-        
-        # if not self.pattern:
-        #    raise Exception(u"No pattern specified")
-        # if not self.seq:
-        #    # parse the template
-        #    self.seq = self.getSequence()
         return self.seq.render(**kwargs)
 
     def dump(self, **kwargs):

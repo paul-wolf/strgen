@@ -3,7 +3,8 @@
 *~
 venv*
 env3
-
+.mypy_cache/
+.venv
 # C extensions
 *.so
 
