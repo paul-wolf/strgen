@@ -1,3 +1,8 @@
+Changes 0.3.4
+------------------------------------
+Fixed use of literal forward slash in character class.
+
+
 Changes 0.3.3
 ------------------------------------
 Use io.open in setup.py for 2.6 and 2.7 compatibility.

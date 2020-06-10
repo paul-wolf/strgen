@@ -39,7 +39,7 @@ import random
 import string
 import types
 
-__version__ = '0.3.3'
+__version__ = '0.3.4'
 __author__ = 'Paul Wolf'
 __license__ = 'BSD'
 #__all__ = ['StringGenerator', '']
