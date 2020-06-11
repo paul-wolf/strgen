@@ -51,7 +51,11 @@ You can also generate useful test data, like fake emails with plenty of variatio
 
      [\c]{10}.[\c]{5:10}@[\c]{3:12}.(com|net|org)
 
+## Requirements
 
+From version 0.4.0, support for 2.x is dropped.
+
+There are no dependencies beyond the Python Standard Library. 
 
 Installation
 ------------
