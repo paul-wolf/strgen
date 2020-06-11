@@ -53,7 +53,8 @@ You can also generate useful test data, like fake emails with plenty of variatio
 
 ## Requirements
 
-From version 0.4.0, support for 2.x is dropped.
+From version 0.4.0, support for 2.x is dropped. If you still need
+support for Python 2, use version 0.3.4.
 
 There are no dependencies beyond the Python Standard Library. 
 
