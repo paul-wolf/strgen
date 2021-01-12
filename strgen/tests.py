@@ -1,11 +1,44 @@
 # -*- coding: utf-8 -*-
 import random
 
-import unittest
-from __init__ import StringGenerator
+from hypothesis import given
+import hypothesis.strategies as st
+from hypothesis import find, settings, Verbosity
+from hypothesis.strategies import lists, integers
 
+import unittest
+from strgen import StringGenerator
+
+SPECIAL_CHARACTERS = "{}[]()|&$-\\"
+
+def remove_special(s) -> str:
+    for c in SPECIAL_CHARACTERS:
+        s = s.replace(c, "")
+    return s
 
 class TestStringGenerator(unittest.TestCase):
+
+
+    @given(st.text(min_size=2, max_size=100), st.integers(min_value=10, max_value=1000))
+    @settings(verbosity=Verbosity.verbose)
+    def test_unicode_strings(self, s, i):
+        s = remove_special(s)
+        if s:
+            p = f"[{s}]{{10}}"
+            print(p)
+            r = StringGenerator(p).render()
+            # print(r)
+            assert r
+        
+    @given(st.characters(blacklist_characters=SPECIAL_CHARACTERS), st.integers())
+    @settings(verbosity=Verbosity.verbose)
+    def test_single_characters(self, s, i):
+        p = f"[{s}]{{10}}"
+        r = StringGenerator(p).render()
+        # print(r)
+        assert r
+
+
     def test_string_generator(self):
         """Test various templates."""
         test_list = [
@@ -131,7 +164,7 @@ class TestStringGenerator(unittest.TestCase):
 
     def test_source(self):
 
-        from countries import countries
+
 
         # you can pass a function
         StringGenerator("blah${names}").render(
