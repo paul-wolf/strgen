@@ -1,3 +1,6 @@
+.vscode
+_build
+
 *.py[cod]
 .hypothesis
 .pytest_cache/
