@@ -1,15 +1,13 @@
 language: python
 python:
-  - "3.4"  
-  - "3.5"
   - "3.6"
   - "3.7"
   - "3.8"  
+  - "3.9"  
   - "nightly"
 
-# command to install dependencies
-# install: "pip install -r requirements.txt"
-# we have no third-party dependencies
+# only needed for tests
+install: "pip install -r requirements.txt"
 
 script:
   python strgen/tests.py

@@ -13,7 +13,7 @@ extensions = [
 
 project = "StringGenerator"
 copyright = "2021, Paul Wolf"
-author = "Paul Wolf"
+author = "Paul Wolf" ////
 
 release = "0.4.0"
 
