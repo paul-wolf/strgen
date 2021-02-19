@@ -1,7 +1,7 @@
 strgen
 ======
 
-[![Build Status](https://travis-ci.org/paul-wolf/strgen.svg?branch=master)](https://travis-ci.org/paul-wolf/strgen)
+[![Python package](https://github.com/paul-wolf/strgen/actions/workflows/main.yml/badge.svg)](https://github.com/paul-wolf/strgen/actions/workflows/main.yml)
 
 Generate test data, unique ids, passwords, vouchers or other randomized
 textual data very quickly using a template language. The template
