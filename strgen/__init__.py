@@ -54,6 +54,7 @@ except Exception:
     sample = random.sample
     shuffle = random.shuffle
 
+
 class StringGenerator(object):
     """Generate a randomized string of characters using a template.
 
@@ -302,8 +303,7 @@ class StringGenerator(object):
         return [start, int(digits)]
 
     def getSource(self):
-        """Extract the identifier out of this construct: ${mylist}: mylist
-        """
+        """Extract the identifier out of this construct: ${mylist}: mylist"""
         bracket = self.next()
         # we should only be here because that was a bracket
         if not bracket == "{":

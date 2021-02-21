@@ -11,14 +11,14 @@ from strgen import StringGenerator
 
 SPECIAL_CHARACTERS = "{}[]()|&$-\\"
 
+
 def remove_special(s) -> str:
     for c in SPECIAL_CHARACTERS:
         s = s.replace(c, "")
     return s
 
+
 class TestStringGenerator(unittest.TestCase):
-
-
     @given(st.text(min_size=2, max_size=100), st.integers(min_value=10, max_value=1000))
     @settings(verbosity=Verbosity.verbose)
     def test_unicode_strings(self, s, i):
@@ -29,7 +29,7 @@ class TestStringGenerator(unittest.TestCase):
             r = StringGenerator(p).render()
             # print(r)
             assert r
-        
+
     @given(st.characters(blacklist_characters=SPECIAL_CHARACTERS), st.integers())
     @settings(verbosity=Verbosity.verbose)
     def test_single_characters(self, s, i):
@@ -37,7 +37,6 @@ class TestStringGenerator(unittest.TestCase):
         r = StringGenerator(p).render()
         # print(r)
         assert r
-
 
     def test_string_generator(self):
         """Test various templates."""
@@ -163,8 +162,6 @@ class TestStringGenerator(unittest.TestCase):
         self.assertEqual(result, "\\")
 
     def test_source(self):
-
-
 
         # you can pass a function
         StringGenerator("blah${names}").render(
