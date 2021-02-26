@@ -331,7 +331,7 @@ class StringGenerator(object):
             t = tmp
         if (ord(t) - ord(f)) > 10000:  # protect against large sets ?
             raise Exception(
-                "character range too large: %s - %s: %s"(f, t, ord(t) - ord(f))
+                "character range too large: %s - %s: %s" % (f, t, ord(t) - ord(f))
             )
         for c in range(ord(f), ord(t) + 1):
             chars += chr(c)
