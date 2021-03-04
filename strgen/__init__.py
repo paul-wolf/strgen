@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2013-2020, Yewleaf Ltd.
+# Copyright (c) 2013-2020, Paul Wolf
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without
@@ -32,30 +32,35 @@
 
 # Original author: paul.wolf@yewleaf.com
 
+
 import random
 import string
 import types
+import typing
+from abc import ABC, abstractmethod
 
-__version__ = "0.3.4"
+__version__ = "0.4.1"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
 
-try:
-    # try to use cryptographically strong methods
-    sr = random.SystemRandom()
-    randint = sr.randint
-    choice = sr.choice
-    sample = sr.sample
-    shuffle = sr.shuffle
-except Exception:
-    # fall back if necessary
-    randint = random.randint
-    choice = random.choice
-    sample = random.sample
-    shuffle = random.shuffle
+# class SGRandom:
 
 
-class StringGenerator(object):
+def randomizer_factory(seed) -> random.Random:
+    """Return class instance that will provide randint, choice, shuffle.
+
+    If there is a seed, we need to use Random.
+
+    """
+    if seed:
+        return random.Random(seed)
+    try:
+        return random.SystemRandom()
+    except Exception:
+        return random.Random()
+
+
+class StringGenerator:
     """Generate a randomized string of characters using a template.
 
     The purpose of this class is to generate a string of characters
@@ -76,12 +81,14 @@ class StringGenerator(object):
 
     Example:
 
-       StringGenerator(r"[\d]{10}").render_list(10, unique=True)
+       `StringGenerator(r"[\\d]{10}").render_list(10, unique=True)`
 
     This generates 10 unique strings containing digits. Each will be
     10 characters in length.
 
     """
+
+    randomizer: typing.Optional[random.Random] = None
 
     class SyntaxError(Exception):
         """Catch syntax errors."""
@@ -104,11 +111,11 @@ class StringGenerator(object):
         "p": string.punctuation,
         "l": string.ascii_letters,
         "u": string.ascii_uppercase,
+        "U": string.ascii_uppercase,
         "c": string.ascii_lowercase,
         "o": string.octdigits,
         "h": string.hexdigits,
         "r": string.printable,
-        # u'a':string.ascii_letters,
     }
     string_code_help = {
         "d": "digits",
@@ -118,21 +125,23 @@ class StringGenerator(object):
         "p": "punctuation",
         "l": "ascii_letters",
         "u": "ascii_uppercase",
+        "U": "ascii_uppercase",
         "c": "ascii_lowercase",
         "o": "octdigits",
         "h": "hexdigits",
         "r": "printable",
-        # u'a':u'ascii_letters',
     }
 
-    class StringNode(object):
+    class StringNode(ABC):
         """The abstract class for all nodes"""
 
+        @abstractmethod
         def render(self, **kwargs):
-            raise Exception("abstract class")
+            pass
 
+        @abstractmethod
         def dump(self):
-            raise Exception("abstract class")
+            pass
 
     class Sequence:
         """Render a sequence of nodes from the template."""
@@ -154,7 +163,9 @@ class StringGenerator(object):
 
         def render(self, **kwargs):
             # return just one of the items in self.seq
-            return self.seq[randint(0, len(self.seq) - 1)].render(**kwargs)
+            return self.seq[
+                StringGenerator.randomizer.randint(0, len(self.seq) - 1)
+            ].render(**kwargs)
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + "OR")
@@ -167,7 +178,7 @@ class StringGenerator(object):
         def render(self, **kwargs):
             # return a permutation of all characters in seq
             char_list = list("".join([x.render(**kwargs) for x in self.seq]))
-            shuffle(char_list)
+            StringGenerator.randomizer.shuffle(char_list)
             return "".join(char_list)
 
         def dump(self, level=-1):
@@ -205,11 +216,12 @@ class StringGenerator(object):
         def render(self, **kwargs):
             cnt = 1
             if self.start > -1:
-                cnt = randint(self.start, self.cnt)
+                cnt = StringGenerator.randomizer.randint(self.start, self.cnt)
             else:
                 cnt = self.cnt
             return "".join(
-                self.chars[randint(0, len(self.chars) - 1)] for x in range(cnt)
+                self.chars[StringGenerator.randomizer.randint(0, len(self.chars) - 1)]
+                for x in range(cnt)
             )
 
         def dump(self, level=0):
@@ -226,8 +238,15 @@ class StringGenerator(object):
 
         def render(self, **kwargs):
             src = kwargs.get(self.source) if self.source in kwargs else ""
-            if isinstance(src, list) or isinstance(src, set) or isinstance(src, tuple):
-                return str(random.choice(src))
+            if isinstance(
+                src,
+                (
+                    list,
+                    set,
+                    tuple,
+                ),
+            ):
+                return str(StringGenerator.randomizer.choice(src))
             elif callable(src):
                 return str(src())
             elif isinstance(src, types.GeneratorType):
@@ -241,7 +260,7 @@ class StringGenerator(object):
         def __str__(self):
             return str(self)
 
-    def __init__(self, pattern, uaf=10):
+    def __init__(self, pattern, uaf=10, randomizer=None, seed=None):
         try:
             self.pattern = pattern
         except NameError:
@@ -250,6 +269,18 @@ class StringGenerator(object):
         self.index = -1
         self.unique_attempts_factor = uaf
         self.seq = self.getSequence()
+        if randomizer:
+            if not (
+                hasattr(randomizer, "randint")
+                and hasattr(randomizer, "choice")
+                and hasattr(randomizer, "shuffle")
+            ):
+                Exception(
+                    "The randomizer class instance must provide at least these methods: randint, choice, shuffle"
+                )
+            StringGenerator.randomizer = randomizer
+        else:
+            StringGenerator.randomizer = randomizer_factory(seed)
 
     def current(self):
         if self.index < len(self.pattern):
@@ -497,8 +528,9 @@ class StringGenerator(object):
             self.seq = self.getSequence()
         print("StringGenerator version: %s" % (__version__))
         print("Python version: %s" % sys.version)
-        # this doesn't work anymore in p3
-        # print("Random method provider class: %s" % randint.im_class.__name__)
+        print(
+            f"Random method provider class: {StringGenerator.randomizer.__class__.__name__}"
+        )
         self.seq.dump()
         return self.render(**kwargs)
 

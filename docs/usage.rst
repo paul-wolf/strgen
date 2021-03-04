@@ -4,21 +4,34 @@ Usage
 ::
 
    from strgen import StringGenerator
-   StringGenerator(<template>).render()
+   StringGenerator(<template>, <seed>).render()
 
 or to produce a list of unique strings:
 
 ::
 
    from strgen import StringGenerator
-   StringGenerator(<template>).render_list(<length>,unique=True)
+   StringGenerator(template, uaf, seed).render_list(<length>, unique=True)
 
+* template: a string that conforms to the StringGenerator pattern
+  language as defined in this document
+
+* uaf: Unique attempts factor: you only need this if you are trying to
+  generate a list with a pattern that has a low uniqueness potential
+  and a relatively high list size. It will cause the generator to try
+  longer (list_size * uaf) in case it is not getting unique results
+  before giving up.
+
+* seed: You can specify a seed as per `random
+  <https://docs.python.org/3/library/random.html>`__ if you would like
+  to test with reproduceable results.
+   
 Example:
 
 ::
 
-   >>> from strgen import StringGenerator
-   >>> StringGenerator('[\l\d]{4:18}&[\d]&[\p]').render()
+   >>> from strgen import StringGenerator as SG
+   >>> SG('[\l\d]{4:18}&[\d]&[\p]').render()
    u'Cde90uC{X6lWbOueT'
 
 The ``template`` is a string that is a sequence of one or more of the
@@ -30,7 +43,24 @@ following:
    separated by operators and using parentheses where appropriate (for
    example: ``(UID[\d]{4}&[\w]{4})``)
 
-In more detail:
+A quantifier ``{x-y}`` should be provided normally just after a
+character class to determine the size of the resulting string where x
+and y are integers and y can be left away for a fixed length. With no
+quantifier, a character class assumes a length of 1.
+
+The range operator can be either ``-`` or ``:`` as in ``{10:20}`` or
+``{10-20}``.
+
+You can avoid escaping if you use raw strings, like ``r"[\u]{20}"``. You
+need to accommodate f-strings by doubling the curly braces for
+quantifiers. You can have raw f-strings:
+
+::
+   
+   x = "foo"
+   SG(fr"[\d\u]{{1:20}}{x}").render()
+   'E3ZG2foo'
+
 
 Literal: <any string>
 ---------------------
@@ -85,8 +115,18 @@ Character Set Codes
 -  ``\p``: punctuation
 -  ``\r``: printable
 -  ``\s``: whitespace
--  ``\u``: uppercase
+-  ``\u``: uppercase 
+-  ``\U``: uppercase 
 -  ``\w``: ``_`` + letters + digits
+
+
+Escape ``\u`` as ``\\u`` since this is the unicode prefix unless you use a raw string:
+
+::
+
+   r"[\u]{8}"
+   
+Or use the alias ``\U``.
 
 Quantifier: {x:y}
 -----------------
@@ -121,32 +161,29 @@ Using a character class and no quantifier will result in a quantifier of
 
 will result always in either ``a``, ``b``, or ``c``.
 
-Variable Substitution
----------------------
+Data Sources
+------------
 
 We provide the ``${varname}`` syntax to enable any value to be returned.
 ``varname`` must be provided as a keyword argument to the ``render()``
-or ``render_list()`` methods. You can use a list, function, generator.
+or ``render_list()`` methods. You can use a list, function (callable) or generator.
 Here’s an example using a list:
 
-::
+.. code:: python
 
-   StringGenerator('William of ${names}').render(names=['Orange', 'Normandy', 'Ockham'])
+   SG('William of ${names}').render(names=['Orange', 'Normandy', 'Ockham'])
 
 Or use a range converted to a list:
 
-::
+.. code:: python
 
-   StringGenerator('You have ${chances} chances').render(chances=list(range(1000)))
-
-Note that in Python 2.x ``range()`` returns a list. In Python 3,
-``range()`` returns a ``range`` type.
+   SG('You have ${chances} chances').render(chances=list(range(1000)))
 
 Or using a function:
 
-::
+.. code:: python
 
-   StringGenerator('William of ${names}').render(names=lambda: random.choice(['Orange', 'Normandy', 'Ockham']))
+   SG('William of ${names}').render(names=lambda: random.choice(['Orange', 'Normandy', 'Ockham']))
 
 You can obviously pass any callable or generator that might, for
 instance, randomly choose a value from a database, if that is what you
@@ -158,6 +195,15 @@ you, randomly. If you use a callable, StringGenerator takes and inserts
 whatever is returned by the callable. The callable is required to do any
 randomisation if that is what the user wants. So, if you pass a function
 that returns a list, the entire list will be inserted as a string.
+
+As mentioned above, if you use an f-string, double your curly braces
+for the data source name.
+
+.. code:: python
+
+   x = "William of "
+   SG(f"{x}${{names}}").render(names=['Orange', 'Normandy', 'Ockham'])
+
 
 Group: (<group specification>)
 ------------------------------
@@ -234,9 +280,9 @@ They can be used as literals by escaping with backslash. All other
 characters are treated as literals. The hyphen is only special in a
 character class, when it appears within square brackets.
 
-One special case is the escape character itself, backslash ’'. To escape
-this, you will need at least two backslashes to escape it. So, three
-alltogether: one for Python’s string interpretation and one for
+One special case is the escape character itself, backslash ``\``. To escape
+this, you will need at least two backslashes. So, three
+altogether: one for Python’s string interpretation and one for
 StringGenerator’s escaping. If for some exotic reason you want two
 literal backslashes in a row, you need a total of eight backslashes. The
 foregoing presupposes the template is a string in a file. If you are

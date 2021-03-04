@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
+import collections
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -16,6 +17,21 @@ def remove_special(s) -> str:
     for c in SPECIAL_CHARACTERS:
         s = s.replace(c, "")
     return s
+
+
+class CustomBadRandomizer:
+    pass
+
+
+class CustomRandomizer(random.Random):
+    def choice(self, s):
+        return super().choice(s)
+
+    def shuffle(self, s):
+        return super().shuffle(s)
+
+    def randint(self, a, b):
+        return super().randint(a, b)
 
 
 class TestStringGenerator(unittest.TestCase):
@@ -161,6 +177,11 @@ class TestStringGenerator(unittest.TestCase):
         result = StringGenerator(r"[\\]").render()
         self.assertEqual(result, "\\")
 
+    def test_capital_u(self):
+        result = StringGenerator(r"[\U]{10}").render()
+        assert len(result) == 10
+        assert result.isupper()
+
     def test_source(self):
 
         # you can pass a function
@@ -175,6 +196,49 @@ class TestStringGenerator(unittest.TestCase):
 
         # range to list
         StringGenerator("generator: ${names}").render(names=list(range(10)))
+
+    def test_unseeded_randomizer(self):
+        # provide a seed to get consistent results
+        pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
+
+        sg = StringGenerator(pattern)
+        s1 = sg.render()
+        sg = StringGenerator(pattern)
+        s2 = sg.render()
+        assert s1 != s2
+
+        sg = StringGenerator(pattern)
+        list1 = sg.render_list(100)
+        sg = StringGenerator(pattern)
+        list2 = sg.render_list(100)
+        assert collections.Counter(list1) != collections.Counter(list2)
+
+    def test_seeded_randomizer(self):
+        # provide a seed to get consistent results
+        pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
+
+        for seed in [random.randint(1, 100000000) for _ in range(100)]:
+            sg = StringGenerator(pattern, seed=seed)
+            s1 = sg.render()
+            sg = StringGenerator(pattern, seed=seed)
+            s2 = sg.render()
+            assert s1 == s2
+
+            sg = StringGenerator(pattern, seed=seed)
+            list1 = sg.render_list(100)
+            sg = StringGenerator(pattern, seed=seed)
+            list2 = sg.render_list(100)
+            assert collections.Counter(list1) == collections.Counter(list2)
+
+    def test_custom_bad_randomizer(self):
+        pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
+        sg = StringGenerator(pattern, randomizer=CustomBadRandomizer())
+        self.assertRaises(Exception, lambda: sg.render())
+
+    def test_custom_randomizer(self):
+        pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
+        sg = StringGenerator(pattern, randomizer=CustomRandomizer())
+        assert len(sg.render())
 
     def test_dump(self):
         """make sure dump method works."""

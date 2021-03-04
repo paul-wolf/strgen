@@ -8,17 +8,23 @@ defining how to match or capture strings, it defines how to generate
 randomized strings. A very simple invocation to produce a random string
 with word characters and digits of 10 characters length:
 
+.. code:: python
+
+   >>> from strgen import StringGenerator as SG
+   >>> SG("[\d\w]{10}").render()
+   'sj5ic8vebF'
+
+Install:
+
 ::
 
-   >>> import strgen
-   >>> strgen.StringGenerator("[\d\w]{10}").render()
-   'sj5ic8vebF'
+   pip install StringGenerator
 
 The purpose of this module is to save the Python developer from having
 to write verbose code around the same pattern every time to generate
 passwords, keys, tokens, test data, etc. of this sort:
 
-::
+.. code:: python
 
      my_secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(30))
 
@@ -38,17 +44,19 @@ that is:
    length and have characters from sets Q, R and S”).
 
 The template uses short forms similar to those of regular expressions.
-An example template for generating a strong password:
+An example template for generating the same secret key as above:
 
-::
+.. code:: python
 
-    [\w\p\d]{20}
+   SG(r"[\w\p]{30}").render()
 
 will generate something like the following:
 
 ::
 
-    P{:45Ec5$3)2!I68x`{6
+   "\\/]U.`I$9E[#!'HTT;MSH].-Y};C|Y"
+
+Changing the character specification is a matter of adding two characters.
 
 Guarantee at least two “special” characters in a string:
 
@@ -63,6 +71,8 @@ variation:
 
     [\c]{10}.[\c]{5:10}@[\c]{3:12}.(com|net|org)
 
+
+
 Testing
 -------
 
@@ -71,7 +81,7 @@ For running the unit tests, you might want to try:
 ::
 
    pip install pytest
-   pytest strgen/test.py --verbose
+   pytest
 
 License
 -------
@@ -93,6 +103,7 @@ Original Author: paul.wolf@yewleaf.com
 
    installation
    usage
+   randomizer
    progress
    debugging
    rationale

@@ -11,8 +11,8 @@ generate randomized strings. A very simple invocation to produce a
 random string with word characters and digits of 10 characters length:
 
 ```python
->>> import strgen
->>> strgen.StringGenerator("[\d\w]{10}").render()
+>>> from strgen import StringGenerator as SG
+>>> SG("[\d\w]{10}").render()
 'sj5ic8vebF'
 ```
 

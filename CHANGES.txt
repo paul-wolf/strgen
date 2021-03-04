@@ -1,3 +1,22 @@
+Changes 0.4.1
+------------------------------------
+Add seed feature.
+
+Add option for custom Random class.
+
+Add alias for `\u`, `\U`.
+
+Update Sphinx documentation.
+
+
+
+Changes 0.4.0
+------------------------------------
+Merge fix from scompt to eliminate syntax warning.
+
+We no longer support Python earlier than 3.6. 
+
+
 Changes 0.3.4
 ------------------------------------
 Fixed use of literal forward slash in character class.
