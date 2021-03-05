@@ -12,8 +12,8 @@ with word characters and digits of 10 characters length:
 
 .. code:: python
 
-   >>> import strgen
-   >>> strgen.StringGenerator("[\d\w]{10}").render()
+   >>> from strgen import StringGenerator as SG
+   >>> SG("[\d\w]{10}").render()
    'sj5ic8vebF'
 
 `Full documentation <https://strgen.readthedocs.io>`__

@@ -11,22 +11,22 @@ Call the dump() method on the class instance to get useful information:
 
 The output looks something like the following:
 
-::
+.. code:: python
 
-   >>> SG('[\w]{8}&xyz|(zzz&yyy)').dump()
-   StringGenerator version: 1.1.2
-   Python version: 2.7.3 |EPD_free 7.3-2 (32-bit)| (default, Apr 12 2012, 11:28:34)
-   [GCC 4.0.1 (Apple Inc. build 5493)]
-   Random method provider class: SystemRandom
-   sequence:
-   OR
-        AND
-            -1:8:_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
-            xyz
-       sequence:
-            AND
-                 zzz
-                 yyy
-   u'zMXGPwyxE9a'
+     In [106]: SG('[\w]{8}&xyz|(zzz&yyy)').dump()
+     StringGenerator version: 0.4.0
+     Python version: 3.8.7 (default, Feb  3 2021, 06:31:03)
+     [Clang 12.0.0 (clang-1200.0.32.29)]
+     Random method provider class: SystemRandom
+     sequence:
+     OR
+     AND
+          -1:8:_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+          xyz
+     sequence:
+          AND
+               zzz
+               yyy
+     Out[106]: 'ybYxak7JRzN'
                                                                        
 

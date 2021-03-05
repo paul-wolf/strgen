@@ -18,6 +18,9 @@ random string with word characters and digits of 10 characters length:
 
 [Full documentation](https://strgen.readthedocs.io)
 
+The current package requires Python 3.6 or higher. Use version 0.3.4 or earlier
+if you want to use Python 2.7  or an earlier P3 version 
+
 The purpose of this module is to save the Python developer from having to
 write verbose code around the same pattern every time to generate passwords,
 keys, tokens, test data, etc. of this sort:
