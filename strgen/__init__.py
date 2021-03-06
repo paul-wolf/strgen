@@ -39,7 +39,7 @@ import types
 import typing
 from abc import ABC, abstractmethod
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
 

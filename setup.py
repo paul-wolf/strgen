@@ -31,7 +31,7 @@ setup(
     name="StringGenerator",
     long_description=long_description,
     description=DESCRIPTION,
-    version=VERSION + ".post1",
+    version=VERSION,
     url="https://github.com/paul-wolf/strgen",
     author="Paul Wolf",
     author_email="paul.wolf@yewleaf.com",
