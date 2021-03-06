@@ -118,6 +118,6 @@ Original Author: paul.wolf@yewleaf.com
    :target: https://github.com/paul-wolf/strgen/actions/workflows/main.yml
 
 .. |RTD build| image:: https://readthedocs.org/projects/strgen/badge/?version=latest
-:target: https://strgen.readthedocs.io/en/latest/?badge=latest
-:alt: Documentation Status
+   :target: https://strgen.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
             

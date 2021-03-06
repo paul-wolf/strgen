@@ -30,7 +30,6 @@ with io.open("README.rst", encoding="utf-8") as file:
 setup(
     name="StringGenerator",
     long_description=long_description,
-    long_description_content_type="text/x-rst",
     description=DESCRIPTION,
     version=VERSION + ".post1",
     url="https://github.com/paul-wolf/strgen",
