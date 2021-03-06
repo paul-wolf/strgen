@@ -1,9 +1,7 @@
 strgen
 ======
 
-.. image:: https://github.com/paul-wolf/strgen/actions/workflows/main.yml/badge.svg
-:target: https://github.com/paul-wolf/strgen/actions/workflows/main.yml
-:alt: Test status
+.. image:: https://github.com/paul-wolf/strgen/actions/workflows/main.yml/badge.svg :target: https://github.com/paul-wolf/strgen/actions/workflows/main.yml :alt: Test status
       
 .. image:: https://readthedocs.org/projects/strgen/badge/?version=latest
 :target: https://strgen.readthedocs.io/en/latest/?badge=latest
