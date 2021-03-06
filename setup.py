@@ -24,15 +24,15 @@ def get_version(rel_path):
 DESCRIPTION = "Generate randomized strings of characters using a template"
 VERSION = get_version("strgen/__init__.py")
 
-with io.open("README.md", encoding="utf-8") as file:
+with io.open("README.rst", encoding="utf-8") as file:
     long_description = file.read()
 
 setup(
     name="StringGenerator",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     description=DESCRIPTION,
-    version=VERSION,
+    version=VERSION + ".post1",
     url="https://github.com/paul-wolf/strgen",
     author="Paul Wolf",
     author_email="paul.wolf@yewleaf.com",
