@@ -39,12 +39,9 @@ import types
 import typing
 from abc import ABC, abstractmethod
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
-
-# class SGRandom:
-
 
 def randomizer_factory(seed) -> random.Random:
     """Return class instance that will provide randint, choice, shuffle.
@@ -508,7 +505,7 @@ class StringGenerator:
 
         return StringGenerator.Sequence(seq)
 
-    def render(self, **kwargs):
+    def render(self, **kwargs) -> str:
         """Produce a randomized string that fits the template/pattern.
 
         Args:
@@ -520,7 +517,7 @@ class StringGenerator:
         """
         return self.seq.render(**kwargs)
 
-    def dump(self, **kwargs):
+    def dump(self, **kwargs) -> str:
         import sys
 
         """Print the parse tree and then call render for an example."""
@@ -534,13 +531,14 @@ class StringGenerator:
         self.seq.dump()
         return self.render(**kwargs)
 
-    def render_list(self, cnt, unique=False, progress_callback=None, **kwargs):
+    def render_list(self, cnt, unique=False, progress_callback=None, **kwargs) -> typing.List:
         """Return a list of generated strings.
 
         Args:
             cnt (int): length of list
             unique (bool): whether to make entries unique
-
+            progress_callback: callable
+    
         Returns:
             list.
 
@@ -572,3 +570,32 @@ class StringGenerator:
                 progress_callback(i, cnt)
 
         return rendered_list
+
+    def render_set(self, cnt, **kwargs) -> typing.Set:
+        """Return a set of generated strings that will as a result be unique.
+
+        Args:
+            cnt (int): length of list
+            unique (bool): whether to make entries unique
+
+        Returns:
+            set
+
+        This is like `render_list()` but will not take a callback and returns a set.
+        It will be much faster than `render_list()`.
+
+        """
+
+        results = set()
+        while (len(results) < cnt):
+            results |= {self.render(**kwargs) for _ in range(cnt - len(results))}
+
+        return results
+
+    
+    def __str__(self):
+        return self.render()
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}, {self.pattern}, {self.randomizer.__class__.__name__}"
+    

@@ -1,4 +1,4 @@
-Seeding and Custom Randomisation
+Seeding and Custom Randomization
 ================================
 
 If you want to test and produce consistent results, you can use the ``seed`` option:

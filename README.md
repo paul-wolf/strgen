@@ -8,18 +8,30 @@ textual data very quickly using a template language. The template
 language is superficially similar to regular expressions but instead
 of defining how to match or capture strings, it defines how to
 generate randomized strings. A very simple invocation to produce a
-random string with word characters and digits of 10 characters length:
+random string with word characters of 30 characters length:
 
 ```python
->>> from strgen import StringGenerator as SG
->>> SG("[\d\w]{10}").render()
-'sj5ic8vebF'
+from strgen import StringGenerator as SG
+SG(r"[\w]{30}").render()
+'wQjLVRIj1sjjslORpqLJyDObaCnDR2'
 ```
 
 [Full documentation](https://strgen.readthedocs.io)
 
 The current package requires Python 3.6 or higher. Use version 0.3.4 or earlier
-if you want to use Python 2.7  or an earlier P3 version 
+if you want to use Python 2.7 or an earlier Python 3 version.
+
+NB: with version 0.4.2, the preferred method for generating a unique
+list is `StringGenerator.render_set()` instead of
+`render_list()`. Generate 50000 unique secure tokens in a few seconds:
+
+``` python
+secure_tokens = SG("[\p\w]{32}").render_set(50000)
+```
+
+`render_set()` does not support a progress callback. 
+
+There is a rich feature set to randomize strings in situ or include external data. 
 
 The purpose of this module is to save the Python developer from having to
 write verbose code around the same pattern every time to generate passwords,
@@ -62,7 +74,7 @@ You can also generate useful test data, like fake emails with plenty of variatio
 
 ## Requirements
 
-From version 0.4.0, support for 2.x is dropped. If you still need
+From version 0.4.0, support for Python 2 is dropped. If you still need
 support for Python 2, use version 0.3.4.
 
 There are no dependencies beyond the Python Standard Library. 

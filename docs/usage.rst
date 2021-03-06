@@ -1,38 +1,37 @@
 Usage
 =====
 
-::
 
-   from strgen import StringGenerator
-   StringGenerator(<template>, <seed>).render()
+Throughout we import the StringGenerator class aliased as SG:
+
+.. code:: python
+
+   from strgen import StringGenerator as SG
+
+Generate a unique string using this syntax:
+
+.. code:: python
+
+   SG(<template>).render()
 
 or to produce a list of unique strings:
 
 ::
 
-   from strgen import StringGenerator
-   StringGenerator(template, uaf, seed).render_list(<length>, unique=True)
+   SG(<template>).render_set(<length>)
 
 * template: a string that conforms to the StringGenerator pattern
   language as defined in this document
 
-* uaf: Unique attempts factor: you only need this if you are trying to
-  generate a list with a pattern that has a low uniqueness potential
-  and a relatively high list size. It will cause the generator to try
-  longer (list_size * uaf) in case it is not getting unique results
-  before giving up.
+* length: the list of the result set. `render_set()` produces a unique set.
+  `render_list()` can be used if uniqueness is not required.
 
-* seed: You can specify a seed as per `random
-  <https://docs.python.org/3/library/random.html>`__ if you would like
-  to test with reproduceable results.
-   
 Example:
 
-::
+.. code:: python
 
-   >>> from strgen import StringGenerator as SG
-   >>> SG('[\l\d]{4:18}&[\d]&[\p]').render()
-   u'Cde90uC{X6lWbOueT'
+   SG('[\l\d]{4:18}&[\d]&[\p]').render()
+   'Cde90uC{X6lWbOueT'
 
 The ``template`` is a string that is a sequence of one or more of the
 following:
@@ -55,11 +54,22 @@ You can avoid escaping if you use raw strings, like ``r"[\u]{20}"``. You
 need to accommodate f-strings by doubling the curly braces for
 quantifiers. You can have raw f-strings:
 
-::
+.. code:: python
    
    x = "foo"
    SG(fr"[\d\u]{{1:20}}{x}").render()
    'E3ZG2foo'
+
+If you want consistent results for testing, you can seed the generator:
+
+.. code:: python
+
+   SG("[\w]{20}", seed=1234).render_set(10000)
+
+
+`seed` is any integer as per `random <https://docs.python.org/3/library/random.html>`__ if you would like to test with reproduceable results.
+
+See :doc:`randomizer`
 
 
 Literal: <any string>
@@ -134,7 +144,7 @@ Quantifier: {x:y}
 Where x is lower bound and y is upper bound. This construct must always
 follow immediately a class with no intervening whitespace. It is
 possible to write {:y} as a shorthand for {0:y} or {y} to indicate a
-fixed length.
+fixed length. ``{x-y}`` and ``{x:y}`` are synonymous. 
 
 Example:
 
@@ -165,9 +175,9 @@ Data Sources
 ------------
 
 We provide the ``${varname}`` syntax to enable any value to be returned.
-``varname`` must be provided as a keyword argument to the ``render()``
-or ``render_list()`` methods. You can use a list, function (callable) or generator.
-Here’s an example using a list:
+``varname`` must be provided as a keyword argument to the ``render()``,
+``render_set()`` or ``render_list()`` methods. You can use a list, function
+(callable) or generator. Here’s an example using a list:
 
 .. code:: python
 
@@ -193,7 +203,7 @@ Note there is a difference in handling between a callable and list type.
 If you use a ``list``, StringGenerator picks an item from the list for
 you, randomly. If you use a callable, StringGenerator takes and inserts
 whatever is returned by the callable. The callable is required to do any
-randomisation if that is what the user wants. So, if you pass a function
+randomization if that is what the user wants. So, if you pass a function
 that returns a list, the entire list will be inserted as a string.
 
 As mentioned above, if you use an f-string, double your curly braces
@@ -359,13 +369,16 @@ digit than the previous example.
 Uniqueness
 ----------
 
+``render_list()``  and ``render_set()`` both produce unqiue sequences of
+strings. In general, you should use ``render_set()`` as it's much faster. See :doc:`render_set`.
+
 When using the ``unique=True`` flag in the ``render_list()`` method,
 it’s possible the generator cannot possibly produce the required number
 of unique strings. For instance:
 
 ::
 
-    StringGenerator("[0-1]").render_list(100, unique=True)
+    SG("[0-1]").render_list(100, unique=True)
 
 This will generate an exception but not before attempting to generate
 the strings.

@@ -6,13 +6,20 @@ textual data very quickly using a template language. The template
 language is superficially similar to regular expressions but instead of
 defining how to match or capture strings, it defines how to generate
 randomized strings. A very simple invocation to produce a random string
-with word characters and digits of 10 characters length:
+with word characters of 30 characters length:
 
 .. code:: python
 
-   >>> from strgen import StringGenerator as SG
-   >>> SG("[\d\w]{10}").render()
-   'sj5ic8vebF'
+   from strgen import StringGenerator as SG
+   SG(r"[\w]{30}").render()
+   'wQjLVRIj1sjjslORpqLJyDObaCnDR2'
+
+Generate 50000 unique secure tokens, each 32 characters:
+
+.. code:: python
+
+   secure_tokens = SG("[\p\w]{32}").render_set(50000)
+
 
 Install:
 
@@ -21,7 +28,7 @@ Install:
    pip install StringGenerator
 
 The current package requires Python 3.6 or higher. Use version 0.3.4 or 
-earlier if you want to use Python 2.7 or an earlier P3 version. 
+earlier if you want to use Python 2.7 or an earlier Python 3 version. 
 
 The purpose of this module is to save the Python developer from having
 to write verbose code around the same pattern every time to generate
@@ -76,15 +83,17 @@ variation:
 
 
 
-Testing
--------
+Testing and Developing
+----------------------
 
-For running the unit tests, you might want to try:
+For running the unit tests or making changes, you might want to try:
 
 ::
 
-   pip install pytest
+   python -m venv .venv && source .venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
    pytest
+
+`Hypothesis <https://github.com/HypothesisWorks/hypothesis>`_ is used in some unit tests
 
 License
 -------
@@ -106,6 +115,7 @@ Original Author: paul.wolf@yewleaf.com
 
    installation
    usage
+   render_set
    randomizer
    progress
    debugging

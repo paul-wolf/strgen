@@ -1,30 +1,54 @@
 #!python
 import io
+import codecs
+import os.path
 from distutils.core import setup
 
-description = 'Generate randomized strings of characters using a template'
+current_dir = os.path.abspath(os.path.dirname(__file__))
 
-with io.open('README.txt', encoding='utf-8') as file:
+
+def read(rel_path):
+    with codecs.open(os.path.join(current_dir, rel_path), "r") as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith("__version__"):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
+DESCRIPTION = "Generate randomized strings of characters using a template"
+VERSION = get_version("strgen/__init__.py")
+
+with io.open("README.md", encoding="utf-8") as file:
     long_description = file.read()
 
-setup(name='StringGenerator',
-      description=description,
-      url='https://github.com/paul-wolf/strgen',
-      author='Paul Wolf',
-      author_email='paul.wolf@yewleaf.com',
-      version='0.4.1',
-      packages=['strgen', ],
-      license='BSD',
-      long_description=long_description,
-      classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: BSD License',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Programming Language :: Python :: 3.8',
-          'Programming Language :: Python :: 3.9',          
-          'Topic :: Software Development :: Libraries :: Python Modules',
-      ],
-      )
+setup(
+    name="StringGenerator",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    description=DESCRIPTION,
+    version=VERSION,
+    url="https://github.com/paul-wolf/strgen",
+    author="Paul Wolf",
+    author_email="paul.wolf@yewleaf.com",
+    packages=[
+        "strgen",
+    ],
+    license="BSD",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
+)
