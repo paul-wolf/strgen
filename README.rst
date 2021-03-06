@@ -1,11 +1,8 @@
 strgen
 ======
 
-.. image:: https://github.com/paul-wolf/strgen/actions/workflows/main.yml/badge.svg :target: https://github.com/paul-wolf/strgen/actions/workflows/main.yml :alt: Test status
+|Python package| |RTD build|
       
-.. image:: https://readthedocs.org/projects/strgen/badge/?version=latest
-:target: https://strgen.readthedocs.io/en/latest/?badge=latest
-:alt: Documentation Status
       
 Generate test data, unique ids, passwords, vouchers or other randomized
 textual data very quickly using a template language. The template
@@ -119,3 +116,8 @@ Original Author: paul.wolf@yewleaf.com
 
 .. |Python package| image:: https://github.com/paul-wolf/strgen/actions/workflows/main.yml/badge.svg
    :target: https://github.com/paul-wolf/strgen/actions/workflows/main.yml
+
+.. |RTD build| image:: https://readthedocs.org/projects/strgen/badge/?version=latest
+:target: https://strgen.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+            
