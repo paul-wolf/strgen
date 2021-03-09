@@ -2,7 +2,14 @@ strgen
 ======
 
 |Python package| |RTD build|
-      
+
+.. image:: https://img.shields.io/pypi/pyversions/StringGenerator?color=brightgreen
+   :alt: PyPI - Python Version
+
+.. image:: https://badge.fury.io/py/StringGenerator.svg
+    :target: https://badge.fury.io/py/StringGenerator
+    :alt: PyPi Version
+
       
 Generate test data, unique ids, passwords, vouchers or other randomized
 textual data very quickly using a template language. The template
@@ -63,7 +70,7 @@ An example template for generating a strong password:
 
 ::
 
-    [\w\p\d]{20}
+    [\w\p]{20}
 
 will generate something like the following:
 

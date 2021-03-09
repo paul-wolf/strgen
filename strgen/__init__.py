@@ -37,6 +37,7 @@ import random
 import string
 import types
 import typing
+import itertools
 from abc import ABC, abstractmethod
 
 __version__ = "0.4.3"
@@ -90,12 +91,10 @@ class StringGenerator:
     class SyntaxError(Exception):
         """Catch syntax errors."""
 
-        pass
 
     class UniquenessError(Exception):
         """Catch when template can't generate required list count."""
 
-        pass
 
     meta_chars = "[]{}()|&$"
     mytab = " " * 4
@@ -137,6 +136,10 @@ class StringGenerator:
             pass
 
         @abstractmethod
+        def count(self, **kwargs):
+            pass
+
+        @abstractmethod
         def dump(self):
             pass
 
@@ -149,6 +152,9 @@ class StringGenerator:
 
         def render(self, **kwargs):
             return "".join([x.render(**kwargs) for x in self.seq])
+        
+        def count(self, **kwargs):
+            return sum([x.count(**kwargs) for x in self.seq])
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + "sequence:")
@@ -156,18 +162,33 @@ class StringGenerator:
                 s.dump(level + 1)
 
     class SequenceOR(Sequence):
-        """Randomly choose from operands."""
+        """Randomly choose from operands.
+
+        self.seq will be a list with only two elements: left and right operands
+
+        """
 
         def render(self, **kwargs):
-            # return just one of the items in self.seq
+            # return just one of the two items in self.seq
+
+
             return self.seq[
                 StringGenerator.randomizer.randint(0, len(self.seq) - 1)
             ].render(**kwargs)
+        
+        def count(self, **kwargs):
+            return sum([x.count(**kwargs) for x in self.seq])
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + "OR")
             for s in self.seq:
                 s.dump(level + 1)
+
+        def __repr__(self):
+            return f"{self.__class__.__name__}: {self.seq[0]} | {self.seq[1]}"
+
+        def __str__(self):
+            return f"{self.seq[0]} | {self.seq[1]}"
 
     class SequenceAND(Sequence):
         """Render a permutation of characters from operands."""
@@ -177,10 +198,13 @@ class StringGenerator:
             char_list = list("".join([x.render(**kwargs) for x in self.seq]))
             StringGenerator.randomizer.shuffle(char_list)
             return "".join(char_list)
-
+        
+        def count(self, **kwargs):
+            char_list = list("".join([x.render(**kwargs) for x in self.seq]))
+            return math.perm(len(char_list), len(char_list))
+        
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + "AND")
-
             for s in self.seq:
                 s.dump(level + 1)
 
@@ -193,11 +217,17 @@ class StringGenerator:
         def render(self, **kwargs):
             return self.literal
 
+        def count(self, **kwargs):
+            return 1
+        
         def dump(self, level=0):
             print((StringGenerator.mytab * level) + self.literal)
 
         def __str__(self):
             return self.literal
+
+        def __repr__(self):
+            return f"{self.__class__.__name__}: {self.literal}"
 
     class CharacterSet(StringNode):
         """Render a random combination from a set of characters."""
@@ -216,16 +246,25 @@ class StringGenerator:
                 cnt = StringGenerator.randomizer.randint(self.start, self.cnt)
             else:
                 cnt = self.cnt
+
+        
             return "".join(
                 self.chars[StringGenerator.randomizer.randint(0, len(self.chars) - 1)]
                 for x in range(cnt)
             )
+        
+        def count(self, **kwargs):
+            return sum([len(self.chars) ** r for r in range(self.cnt)])
 
+    
         def dump(self, level=0):
             print(StringGenerator.mytab * level + str(self))
 
         def __str__(self):
-            return "%s:%s:%s" % (self.start, self.cnt, self.chars)
+            return f"{self.start=}, {self.cnt=}, {self.chars=}"
+
+        def __repr__(self):
+            return f"{self.__class__.__name__}: {self.start=}, {self.cnt=}, {self.chars=}"
 
     class Source(StringNode):
         """Render a string from a generator, list, function."""
@@ -244,13 +283,16 @@ class StringGenerator:
                 ),
             ):
                 return str(StringGenerator.randomizer.choice(src))
-            elif callable(src):
+            if callable(src):
                 return str(src())
             elif isinstance(src, types.GeneratorType):
                 return str(next(src))
             else:
                 return str(src)
 
+        def count(self, **kwargs):
+            raise NotImplementedError("Cannot get count for source nodes")
+                       
         def dump(self, level=0):
             print((StringGenerator.mytab * level) + "$%s" % self.source)
 
@@ -342,7 +384,7 @@ class StringGenerator:
             c = self.next()
             if not c:
                 raise Exception("unexpected end of input getting source")
-            elif c == "}":
+            if c == "}":
                 break
             else:
                 identifier += c
@@ -371,7 +413,7 @@ class StringGenerator:
         Current index is on '[', the start of the character set.
 
         """
-        # import ipdb; ipdb.set_trace()
+
         chars = ""
         c = None
         cnt = 1
@@ -438,12 +480,17 @@ class StringGenerator:
         return StringGenerator.Literal(chars)
 
     def getSequence(self, level=0):
-        """Get a sequence of nodes."""
+        """Get a sequence of nodes.
+
+        We support only two operators: '|' and '&'
+
+        """
 
         seq = []
         op = ""
         left_operand = None
         right_operand = None
+        operand_stack = list()
         sequence_closed = False
         while True:
             c = self.next()
@@ -517,10 +564,12 @@ class StringGenerator:
         """
         return self.seq.render(**kwargs)
 
+    def count(self, **kwargs) -> int:
+        return self.seq.count(**kwargs)
+            
     def dump(self, **kwargs) -> str:
-        import sys
-
         """Print the parse tree and then call render for an example."""
+        import sys
         if not self.seq:
             self.seq = self.getSequence()
         print("StringGenerator version: %s" % (__version__))
@@ -576,13 +625,18 @@ class StringGenerator:
 
         Args:
             cnt (int): length of list
-            unique (bool): whether to make entries unique
 
         Returns:
             set
 
         This is like `render_list()` but will not take a callback and returns a set.
         It will be much faster than `render_list()`.
+        
+        Caution: this will not check if the solution set is
+        feasible. It will be stuck in a loop if you. The following
+        will never complete:
+
+            SG("[123]{2}").render_set(100)
 
         """
 

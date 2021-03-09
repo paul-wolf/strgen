@@ -1,6 +1,9 @@
 Seeding and Custom Randomization
 ================================
 
+Seeding
+-------
+
 If you want to test and produce consistent results, you can use the ``seed`` option:
 
 .. code:: python
@@ -41,13 +44,22 @@ When you use the ``seed`` option, it will force use of ``random.Random`` and use
 the provided seed value, which can be any integer. This will cause the results
 to be the same each time you initialise the StringGenerator.
 
-You can also provide your own Random class. The only requirement is that it has three methods:
+Custom Random Class
+-------------------
+
+You can also provide your own Random class. Currently we use these methods:
 
 * ``choice()``
 * ``randint()``
 * ``shuffle()``
 
-With the same arguments and return types as ``Random`` and ``SystemRandom``.
+So, you'd need to provide at least these with the same arguments and
+return types as ``Random`` and ``SystemRandom``.
 
 See documentation for the `Python Standard Library random package <https://docs.python.org/3/library/random.html>`__
 
+    BEWARE: you should provide all the methods of ```Random()``` in
+    your custom class because we might change the implementation of
+    StringGenerator to use different methods.  
+
+    
