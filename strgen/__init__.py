@@ -37,6 +37,7 @@ import random
 import string
 import types
 import typing
+import math
 import itertools
 from abc import ABC, abstractmethod
 
@@ -161,9 +162,7 @@ class StringGenerator:
                 s.dump(level + 1)
 
     class SequenceOR(Sequence):
-        """Randomly choose from operands.
-
-        """
+        """Randomly choose from operands."""
 
         def render(self, **kwargs):
             # return just one of the two items in self.seq
@@ -181,13 +180,13 @@ class StringGenerator:
                 s.dump(level + 1)
 
         def __repr__(self):
-            return f"{self.__class__.__name__}"
+            return "{self.__class__.__name__}"
 
         def __str__(self):
-            return f"OR"
+            return "OR"
 
     class SequenceAND(Sequence):
-        """Render a permutation without replacement 
+        """Render a permutation without replacement
         of characters from operands.
         """
 
@@ -205,7 +204,7 @@ class StringGenerator:
             print((StringGenerator.mytab * level) + repr(self))
             for s in self.seq:
                 s.dump(level + 1)
-                
+
         def __str__(self):
             return "AND"
 
@@ -261,7 +260,7 @@ class StringGenerator:
                 # fixed length
                 return len(self.chars) ** self.cnt
             # range
-            return sum([len(self.chars) ** r for r in range(self.start, self.cnt+1)])
+            return sum([len(self.chars) ** r for r in range(self.start, self.cnt + 1)])
 
         def dump(self, level=0):
             print(StringGenerator.mytab * level + repr(self))
@@ -306,7 +305,7 @@ class StringGenerator:
 
         def __repr__(self):
             return f"{self.__class__.__name__}: {self.source}"
-                
+
         def __str__(self):
             return str(self)
 
@@ -549,7 +548,7 @@ class StringGenerator:
                 operand_stack.append(seq.pop())
 
         commit_operands()
-        
+
         if level > 0 and not sequence_closed:
             # it means we are finishing a non-first-level sequence without closing parens
             raise StringGenerator.SyntaxError("Missing closing parenthesis")
@@ -571,7 +570,7 @@ class StringGenerator:
     def count(self, **kwargs) -> int:
         return self.seq.count(**kwargs)
 
-    def dump(self, cnt=None, **kwargs) -> str:
+    def dump(self, cnt=None, **kwargs):
         """Print the parse tree and then call render for an example."""
         import sys
 
@@ -649,7 +648,7 @@ class StringGenerator:
 
         """
 
-        results = set()
+        results: typing.Set = set()
         while len(results) < cnt:
             results |= {self.render(**kwargs) for _ in range(cnt - len(results))}
 

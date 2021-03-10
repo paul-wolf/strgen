@@ -253,7 +253,7 @@ class TestSG(unittest.TestCase):
         repr(SG(r"[\w]{8}"))
 
     def test_probabilistic_or(self):
-        d = SG(f"0|1|2|3|4|5|6|7|8|9").render_list(10000)
+        d = SG("0|1|2|3|4|5|6|7|8|9").render_list(10000)
         d = [int(d) for d in d]
         # statistics.mean(d)
         q = statistics.quantiles(d, n=4)
