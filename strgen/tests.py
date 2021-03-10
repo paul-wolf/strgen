@@ -257,7 +257,7 @@ class TestSG(unittest.TestCase):
         d = [int(d) for d in d]
         # statistics.mean(d)
         # quantiles are not available in python 3.6, 3.7
-        q = statistics.quantiles(d, n=4)
+        # q = statistics.quantiles(d, n=4)
         # # we expect: [2.0, 4.0, 7.0]
         # assert q[0] == 2.0
         # assert q[2] == 7.0
