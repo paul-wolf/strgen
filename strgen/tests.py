@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import collections
+import statistics
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -140,8 +141,8 @@ class TestSG(unittest.TestCase):
             r"[a-]",  # invalid class range
             r"[[1-9]",  # unescaped chars
             r"((foo)(bar)))",  # extra parens
-            r"foo&",  # binary operator error
-            r"|foo",  # binary operator error
+            #  r"foo&",  # binary operator error
+            #  r"|foo",  # binary operator error
             r"[\w]{10:}",  # cannot have open range in quantifier
         ]
         for t in test_list:
@@ -149,9 +150,7 @@ class TestSG(unittest.TestCase):
             # so, test won't work on < 2.7 but everything else should do
             # with self.assertRaises(SG.SyntaxError) as context:
             #    SG(t).render()
-            self.assertRaises(
-                SG.SyntaxError, lambda: SG(t).render()
-            )
+            self.assertRaises(SG.SyntaxError, lambda: SG(t).render())
 
     def test_uniqueness_error(self):
         """Make sure we throw an exception if we can't generate list."""
@@ -192,14 +191,10 @@ class TestSG(unittest.TestCase):
     def test_source(self):
 
         # you can pass a function
-        SG("blah${names}").render(
-            names=lambda: random.choice(["1", "2", "3"])
-        )
+        SG("blah${names}").render(names=lambda: random.choice(["1", "2", "3"]))
 
         # you can pass a generator
-        SG("generator: ${names}").render(
-            names=(lambda: (yield "somestring"))()
-        )
+        SG("generator: ${names}").render(names=(lambda: (yield "somestring"))())
 
         # range to list
         SG("generator: ${names}").render(names=list(range(10)))
@@ -256,6 +251,19 @@ class TestSG(unittest.TestCase):
 
     def test_repr(self):
         repr(SG(r"[\w]{8}"))
+
+    def test_probabilistic_or(self):
+        d = SG(f"0|1|2|3|4|5|6|7|8|9").render_list(10000)
+        d = [int(d) for d in d]
+        # statistics.mean(d)
+        q = statistics.quantiles(d, n=4)
+        # we expect: [2.0, 4.0, 7.0]
+        assert q[0] == 2.0
+        assert q[2] == 7.0
+        # the middle quantile can be 4.0 or 5.0
+        # because 4.5 is the mean
+        assert q[1] == 4.0 or q[1] == 5.0
+
 
 if __name__ == "__main__":
     unittest.main()
