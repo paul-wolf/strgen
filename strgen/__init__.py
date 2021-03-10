@@ -152,7 +152,16 @@ class StringGenerator:
             return "".join([x.render(**kwargs) for x in self.seq])
 
         def count(self, **kwargs):
-            return sum([x.count(**kwargs) for x in self.seq])
+            """This sequence of counts:
+            P x P x P...
+            The cummulative product.
+            """
+            d = [x.count(**kwargs) for x in self.seq]
+            x = 1
+            for i in d:
+                x *= i
+            return x
+
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + f"{self.__class__.__name__}")
@@ -163,7 +172,7 @@ class StringGenerator:
         """Randomly choose from operands."""
 
         def render(self, **kwargs):
-            # return just one of the two items in self.seq
+            """Return on of a sequence of nodes."""
 
             return self.seq[
                 StringGenerator.randomizer.randint(0, len(self.seq) - 1)
@@ -178,7 +187,7 @@ class StringGenerator:
                 s.dump(level + 1)
 
         def __repr__(self):
-            return "{self.__class__.__name__}"
+            return f"{self.__class__.__name__}"
 
         def __str__(self):
             return "OR"
@@ -254,6 +263,9 @@ class StringGenerator:
             )
 
         def count(self, **kwargs):
+            """Permutation with replacement.
+            The cummulative sum of c ** r
+            """
             if self.start < 0:
                 # fixed length
                 return len(self.chars) ** self.cnt
@@ -264,11 +276,11 @@ class StringGenerator:
             print(StringGenerator.mytab * level + repr(self))
 
         def __str__(self):
-            return f"{self.start=}, {self.cnt=}, {self.chars=}"
+            return f"start={self.start}, cnt={self.cnt}, chars={self.chars}"
 
         def __repr__(self):
             return (
-                f"{self.__class__.__name__}: {self.start=}, {self.cnt=}, {self.chars=}"
+                f"{self.__class__.__name__}: start={self.start}, cnt={self.cnt}, chars={self.chars}"
             )
 
     class Source(StringNode):
@@ -296,6 +308,10 @@ class StringGenerator:
                 return str(src)
 
         def count(self, **kwargs):
+            """Since a source name can be a callable, we can't say what the count
+            is.
+
+            """
             raise NotImplementedError("Cannot get count for source nodes")
 
         def dump(self, level=0):
@@ -518,11 +534,19 @@ class StringGenerator:
             if c and c not in self.meta_chars:
                 seq.append(self.getLiteral())
             elif c and c == "$" and self.lookahead() == "{":
+                if not self.last() in "&|":
+                    commit_operands()
                 seq.append(self.getSource())
             elif c == "[" and not self.last() == "\\":
-                # commit_operands()
+                # if this is the first node after an op
+                # it is a right operand
+                # otherwise, stop collecting operands
+                if self.last() and not self.last() in "&|":
+                    commit_operands()
                 seq.append(self.getCharacterSet())
             elif c == "(" and not self.last() == "\\":
+                if self.last() and not self.last() in "&|":
+                    commit_operands()
                 seq.append(self.getSequence(level + 1))
             elif c == ")" and not self.last() == "\\":
                 # end of this sequence

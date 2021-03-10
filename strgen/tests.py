@@ -265,5 +265,13 @@ class TestSG(unittest.TestCase):
         assert q[1] == 4.0 or q[1] == 5.0
 
 
+        # Correct:
+        # SG('1|2|3[abc]{1}'
+        # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
+
+        # NOT Correct:
+        # SG('1|2|[abc]{1}'
+        # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
+
 if __name__ == "__main__":
     unittest.main()
