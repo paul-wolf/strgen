@@ -39,7 +39,7 @@ import math
 import itertools
 from abc import ABC, abstractmethod
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
 
@@ -156,7 +156,7 @@ class StringGenerator:
             P x P x P...
             The cummulative product.
             """
-            d = [x.count(**kwargs) for x in self.seq]
+            d = [_.count(**kwargs) for _ in self.seq]
             x = 1
             for i in d:
                 x *= i
@@ -198,12 +198,15 @@ class StringGenerator:
         """
 
         def render(self, **kwargs):
-            # return a permutation of all characters in seq
+            """Return a permutation without replacement of all characters in seq.
+            """
             char_list = list("".join([x.render(**kwargs) for x in self.seq]))
             StringGenerator.randomizer.shuffle(char_list)
             return "".join(char_list)
 
         def count(self, **kwargs):
+            # n = sum([x.count(**kwargs) for x in self.seq])
+            # return n
             char_list = list("".join([x.render(**kwargs) for x in self.seq]))
             return math.perm(len(char_list), len(char_list))
 
@@ -604,6 +607,8 @@ class StringGenerator:
             f"Random method provider class: {StringGenerator.randomizer.__class__.__name__}"
         )
         self.seq.dump()
+        print(f"Potential outcome count: {self.count()}")
+        print("Example result:")
         if cnt:
             return self.render_list(cnt, **kwargs)
         return self.render(**kwargs)

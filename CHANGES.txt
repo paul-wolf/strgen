@@ -1,3 +1,11 @@
+Changes 0.4.4
+------------------------------------
+Document count() method.
+
+Add recipes and syntax doc.
+
+Fix bias bug using multiple ORs. 
+
 Changes 0.4.3
 ------------------------------------
 Add render_set()

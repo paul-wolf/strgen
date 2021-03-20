@@ -117,6 +117,9 @@ Original Author: paul.wolf@yewleaf.com
    usage
    render_set
    randomizer
+   recipes
+   syntax
+   count
    progress
    debugging
    rationale

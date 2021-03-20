@@ -252,6 +252,11 @@ class TestSG(unittest.TestCase):
     def test_repr(self):
         repr(SG(r"[\w]{8}"))
 
+
+    def test_counts(self):
+        assert SG(r'1&abc').count() == len(SG(r'1&abc').render_set(24))
+        assert SG(r'[\u\d]{2}|[abc]{3}', uaf=100).count() == len(SG(r'[\u\d]{2}|[abc]{3}', uaf=100).render_list(1323, unique=True))
+        
     def test_probabilistic_or(self):
         d = SG("0|1|2|3|4|5|6|7|8|9").render_list(10000)
         d = [int(d) for d in d]
