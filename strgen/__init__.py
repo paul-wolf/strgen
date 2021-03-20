@@ -38,10 +38,23 @@ import typing
 import math
 import itertools
 from abc import ABC, abstractmethod
+from collections import Counter
+from math import factorial
 
 __version__ = "0.4.4"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
+
+
+def permutation_count(s):
+    """Return the number of different permutations of s.
+    math.perm does not exist before P3.8.
+    https://codereview.stackexchange.com/questions/132704/counting-permutations-without-repetitions-for-a-number-or-a-string
+    """
+    c = 1
+    for i in Counter(s).values():
+        c *= factorial(i)
+    return factorial(len(s)) // c
 
 
 def randomizer_factory(seed) -> random.Random:
@@ -205,10 +218,9 @@ class StringGenerator:
             return "".join(char_list)
 
         def count(self, **kwargs):
-            # n = sum([x.count(**kwargs) for x in self.seq])
-            # return n
+            """This does not work for complex expressions."""
             char_list = list("".join([x.render(**kwargs) for x in self.seq]))
-            return math.perm(len(char_list), len(char_list))
+            return permutation_count(char_list)
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + repr(self))
