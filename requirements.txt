@@ -2,3 +2,5 @@ hypothesis
 pytest
 sphinx
 sphinx_rtd_theme
+ruff
+pre-commit

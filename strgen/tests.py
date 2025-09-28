@@ -122,9 +122,7 @@ class TestSG(unittest.TestCase):
             progress_state = "{current}/{total}".format(**locals())
             progress_states.append(progress_state)
 
-        SG(r"[a-z\d\d\d\d]{8}").render_list(
-            list_length, progress_callback=progress_callback
-        )
+        SG(r"[a-z\d\d\d\d]{8}").render_list(list_length, progress_callback=progress_callback)
 
         # Length of list of progress states should match length of
         # requested strings
@@ -150,7 +148,8 @@ class TestSG(unittest.TestCase):
             # so, test won't work on < 2.7 but everything else should do
             # with self.assertRaises(SG.SyntaxError) as context:
             #    SG(t).render()
-            self.assertRaises(SG.SyntaxError, lambda: SG(t).render())
+            with self.assertRaises(SG.SyntaxError):
+                SG(t).render()
 
     def test_uniqueness_error(self):
         """Make sure we throw an exception if we can't generate list."""
@@ -189,7 +188,6 @@ class TestSG(unittest.TestCase):
         assert result.isupper()
 
     def test_source(self):
-
         # you can pass a function
         SG("blah${names}").render(names=lambda: random.choice(["1", "2", "3"]))
 
@@ -235,7 +233,8 @@ class TestSG(unittest.TestCase):
     def test_custom_bad_randomizer(self):
         pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
         sg = SG(pattern, randomizer=CustomBadRandomizer())
-        self.assertRaises(Exception, lambda: sg.render())
+        with self.assertRaises(AttributeError):
+            sg.render()
 
     def test_custom_randomizer(self):
         pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
@@ -252,11 +251,12 @@ class TestSG(unittest.TestCase):
     def test_repr(self):
         repr(SG(r"[\w]{8}"))
 
-
     def test_counts(self):
-        assert SG(r'1&abc').count() == len(SG(r'1&abc').render_set(24))
-        assert SG(r'[\u\d]{2}|[abc]{3}', uaf=100).count() == len(SG(r'[\u\d]{2}|[abc]{3}', uaf=100).render_list(1323, unique=True))
-        
+        assert SG(r"1&abc").count() == len(SG(r"1&abc").render_set(24))
+        assert SG(r"[\u\d]{2}|[abc]{3}", uaf=100).count() == len(
+            SG(r"[\u\d]{2}|[abc]{3}", uaf=100).render_list(1323, unique=True)
+        )
+
     def test_probabilistic_or(self):
         d = SG("0|1|2|3|4|5|6|7|8|9").render_list(10000)
         d = [int(d) for d in d]
@@ -270,14 +270,14 @@ class TestSG(unittest.TestCase):
         # # because 4.5 is the mean
         # assert q[1] == 4.0 or q[1] == 5.0
 
-
         # Correct:
-        # SG('1|2|3[abc]{1}'
-        # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
+        # SG('1|2|3[abc]{1}'
+        # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
 
         # NOT Correct:
-        # SG('1|2|[abc]{1}'
-        # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
+        # SG('1|2|[abc]{1}'
+        # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
+
 
 if __name__ == "__main__":
     unittest.main()

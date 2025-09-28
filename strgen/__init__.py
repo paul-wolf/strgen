@@ -175,7 +175,6 @@ class StringGenerator:
                 x *= i
             return x
 
-
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + f"{self.__class__.__name__}")
             for s in self.seq:
@@ -187,9 +186,7 @@ class StringGenerator:
         def render(self, **kwargs):
             """Return on of a sequence of nodes."""
 
-            return self.seq[
-                StringGenerator.randomizer.randint(0, len(self.seq) - 1)
-            ].render(**kwargs)
+            return self.seq[StringGenerator.randomizer.randint(0, len(self.seq) - 1)].render(**kwargs)
 
         def count(self, **kwargs):
             return sum([x.count(**kwargs) for x in self.seq])
@@ -211,8 +208,7 @@ class StringGenerator:
         """
 
         def render(self, **kwargs):
-            """Return a permutation without replacement of all characters in seq.
-            """
+            """Return a permutation without replacement of all characters in seq."""
             char_list = list("".join([x.render(**kwargs) for x in self.seq]))
             StringGenerator.randomizer.shuffle(char_list)
             return "".join(char_list)
@@ -272,10 +268,7 @@ class StringGenerator:
             else:
                 cnt = self.cnt
 
-            return "".join(
-                self.chars[StringGenerator.randomizer.randint(0, len(self.chars) - 1)]
-                for x in range(cnt)
-            )
+            return "".join(self.chars[StringGenerator.randomizer.randint(0, len(self.chars) - 1)] for x in range(cnt))
 
         def count(self, **kwargs):
             """Permutation with replacement.
@@ -294,9 +287,7 @@ class StringGenerator:
             return f"start={self.start}, cnt={self.cnt}, chars={self.chars}"
 
         def __repr__(self):
-            return (
-                f"{self.__class__.__name__}: start={self.start}, cnt={self.cnt}, chars={self.chars}"
-            )
+            return f"{self.__class__.__name__}: start={self.start}, cnt={self.cnt}, chars={self.chars}"
 
     class Source(StringNode):
         """Render a string from a generator, list, function."""
@@ -349,13 +340,9 @@ class StringGenerator:
         self.seq = self.getSequence()
         if randomizer:
             if not (
-                hasattr(randomizer, "randint")
-                and hasattr(randomizer, "choice")
-                and hasattr(randomizer, "shuffle")
+                hasattr(randomizer, "randint") and hasattr(randomizer, "choice") and hasattr(randomizer, "shuffle")
             ):
-                Exception(
-                    "The randomizer class instance must provide at least these methods: randint, choice, shuffle"
-                )
+                Exception("The randomizer class instance must provide at least these methods: randint, choice, shuffle")
             StringGenerator.randomizer = randomizer
         else:
             StringGenerator.randomizer = randomizer_factory(seed)
@@ -439,9 +426,7 @@ class StringGenerator:
             f = t
             t = tmp
         if (ord(t) - ord(f)) > 10000:  # protect against large sets ?
-            raise Exception(
-                "character range too large: %s - %s: %s" % (f, t, ord(t) - ord(f))
-            )
+            raise Exception("character range too large: %s - %s: %s" % (f, t, ord(t) - ord(f)))
         for c in range(ord(f), ord(t) + 1):
             chars += chr(c)
         return chars
@@ -489,9 +474,7 @@ class StringGenerator:
                     cnt = 1
                 break
             if c and c in self.meta_chars and not self.last() == "\\":
-                raise StringGenerator.SyntaxError(
-                    "Un-escaped character in class definition: %s" % c
-                )
+                raise StringGenerator.SyntaxError("Un-escaped character in class definition: %s" % c)
             if not c:
                 break
 
@@ -532,11 +515,7 @@ class StringGenerator:
             """Append to seq if operands."""
             nonlocal operand_stack, op, seq
             if op and operand_stack:
-                klass = (
-                    StringGenerator.SequenceOR
-                    if op == "|"
-                    else StringGenerator.SequenceAND
-                )
+                klass = StringGenerator.SequenceOR if op == "|" else StringGenerator.SequenceAND
                 seq.append(klass(operand_stack[:]))
                 operand_stack = list()
                 op = None
@@ -549,18 +528,18 @@ class StringGenerator:
             if c and c not in self.meta_chars:
                 seq.append(self.getLiteral())
             elif c and c == "$" and self.lookahead() == "{":
-                if not self.last() in "&|":
+                if self.last() not in "&|":
                     commit_operands()
                 seq.append(self.getSource())
             elif c == "[" and not self.last() == "\\":
                 # if this is the first node after an op
                 # it is a right operand
                 # otherwise, stop collecting operands
-                if self.last() and not self.last() in "&|":
+                if self.last() and self.last() not in "&|":
                     commit_operands()
                 seq.append(self.getCharacterSet())
             elif c == "(" and not self.last() == "\\":
-                if self.last() and not self.last() in "&|":
+                if self.last() and self.last() not in "&|":
                     commit_operands()
                 seq.append(self.getSequence(level + 1))
             elif c == ")" and not self.last() == "\\":
@@ -577,9 +556,7 @@ class StringGenerator:
                 op = c
             else:
                 if c in self.meta_chars and not self.last() == "\\":
-                    raise StringGenerator.SyntaxError(
-                        "Un-escaped special character: %s" % c
-                    )
+                    raise StringGenerator.SyntaxError("Un-escaped special character: %s" % c)
 
             if op and len(seq):
                 operand_stack.append(seq.pop())
@@ -615,9 +592,7 @@ class StringGenerator:
             self.seq = self.getSequence()
         print("StringGenerator version: %s" % (__version__))
         print("Python version: %s" % sys.version)
-        print(
-            f"Random method provider class: {StringGenerator.randomizer.__class__.__name__}"
-        )
+        print(f"Random method provider class: {StringGenerator.randomizer.__class__.__name__}")
         self.seq.dump()
         print(f"Potential outcome count: {self.count()}")
         print("Example result:")
@@ -625,9 +600,7 @@ class StringGenerator:
             return self.render_list(cnt, **kwargs)
         return self.render(**kwargs)
 
-    def render_list(
-        self, cnt, unique=False, progress_callback=None, **kwargs
-    ) -> typing.List:
+    def render_list(self, cnt, unique=False, progress_callback=None, **kwargs) -> typing.List:
         """Return a list of generated strings.
 
         Args:
