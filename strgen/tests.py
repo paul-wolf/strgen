@@ -70,39 +70,129 @@ class TestSG(unittest.TestCase):
             result = SG(t).render()
             self.assertIsNotNone(result)
 
-    def test_unicode(self):
-        test_list = [
+    def test_unicode_literals(self):
+        """Test that Unicode literal strings are rendered correctly."""
+        unicode_strings = [
             r"idzie wąż wąską dróżką",
             r"༣ཁངཱུངྵ",
             r"ᚠᚳᛦᛰ",
-            r"[ą-ż]{8}",
-            r"\xe6\xbf\xe5, \xe9\xe5\xa9\xe5\xe5\xad\xe6\xaf\xe7\xe9\xba\xbc\xe6\xe6",  # noqa: E501
         ]
 
-        for t in test_list:
-            result = SG(t).render()
-            # TODO: must be a better test than testing for None
-            self.assertIsNotNone(result)
+        for template in unicode_strings:
+            result = SG(template).render()
+            self.assertEqual(result, template)
+            self.assertIsInstance(result, str)
 
-    def test_render_list(self):
+    def test_unicode_character_class(self):
+        """Test Unicode character class ranges."""
+        template = r"[ą-ż]{8}"
+        result = SG(template).render()
+
+        self.assertIsInstance(result, str)
+        self.assertEqual(len(result), 8)
+
+        # Verify all characters are in the expected Unicode range
+        for char in result:
+            self.assertGreaterEqual(ord(char), ord("ą"))
+            self.assertLessEqual(ord(char), ord("ż"))
+
+    def test_unicode_escape_sequences(self):
+        """Test Unicode escape sequences in templates."""
+        template = r"\xe6\xbf\xe5, \xe9\xe5\xa9\xe5\xe5\xad\xe6\xaf\xe7\xe9\xba\xbc\xe6\xe6"
+        result = SG(template).render()
+
+        self.assertIsInstance(result, str)
+        self.assertIsNotNone(result)
+        # The result should contain the decoded Unicode characters
+        # Note: This template contains hex escape sequences that should be decoded
+
+    def test_render_list_email_template(self):
+        """Test render_list with email-like template."""
+        template = r"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)"
         list_length = 10
-        test_list = [
-            r"[a-z][\c]{10}(.|_)[\c]{5:10}@[\c]{3:12}.(com|net|org)",
-            r"[a-z\d\d\d\d]{8}",
-            r"[\l]{6:10}&[\d]{2}",
-            r"[\l]{6-10}&[\d]{2}",  # support both hyphen and colon for ranges
-            r"([a-z]{4}|[0-9]{9})",
-            r"[\d]&[\c]&[\w\p]{6}",
-            r"[\w\p]",
-            r"[\w\p]{6}",
-            r"[\w\p]{-6}" r"[\w\p]{:6}",
-            r"[\w\p]{0:6}",
-        ]
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
 
-        for t in test_list:
-            result = SG(t).render_list(list_length)
-            self.assertTrue(isinstance(result, list))
-            self.assertTrue(len(result) == list_length)
+    def test_render_list_mixed_alphanumeric(self):
+        """Test render_list with mixed alphanumeric template."""
+        template = r"[a-z\d\d\d\d]{8}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_letter_digit_combination_colon(self):
+        """Test render_list with letter-digit combination using colon range syntax."""
+        template = r"[\l]{6:10}&[\d]{2}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_letter_digit_combination_hyphen(self):
+        """Test render_list with letter-digit combination using hyphen range syntax."""
+        template = r"[\l]{6-10}&[\d]{2}"  # support both hyphen and colon for ranges
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_alternation(self):
+        """Test render_list with alternation (OR) operator."""
+        template = r"([a-z]{4}|[0-9]{9})"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_mixed_character_classes(self):
+        """Test render_list with mixed character classes and & operator."""
+        template = r"[\d]&[\c]&[\w\p]{6}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_single_character_class(self):
+        """Test render_list with single character class."""
+        template = r"[\w\p]"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_fixed_length_character_class(self):
+        """Test render_list with fixed length character class."""
+        template = r"[\w\p]{6}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_negative_quantifier(self):
+        """Test render_list with negative quantifier."""
+        template = r"[\w\p]{-6}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_open_ended_quantifier(self):
+        """Test render_list with open-ended quantifier."""
+        template = r"[\w\p]{:6}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
+
+    def test_render_list_zero_to_n_quantifier(self):
+        """Test render_list with zero-to-n quantifier."""
+        template = r"[\w\p]{0:6}"
+        list_length = 10
+        result = SG(template).render_list(list_length)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), list_length)
 
     def test_render_set(self):
         set_length = 100

@@ -1,7 +1,7 @@
 # pyproject.toml
 [tool.pytest.ini_options]
 minversion = "6.0"
-norecursedirs = ".venv"
+norecursedirs = [".venv", ".hypothesis"]
 addopts = "-ra -q"
 testpaths = [
     "strgen/tests.py",

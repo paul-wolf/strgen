@@ -1,4 +1,11 @@
 [run]
-source=.    
-omit=*.venv*
+branch = true
+source =
+    strgen
+omit =
+    strgen/tests.py
 
+[report]
+skip_covered = true
+show_missing = true
+precision = 1
