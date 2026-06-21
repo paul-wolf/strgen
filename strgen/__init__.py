@@ -306,9 +306,29 @@ class StringGenerator:
             return "".join(char_list)
 
         def count(self, randomizer, **kwargs):
-            """This does not work for complex expressions."""
-            char_list = list("".join([x.render(randomizer, **kwargs) for x in self.seq]))
-            return permutation_count(char_list)
+            """Number of distinct outcomes of a permutation ('&') of the operands.
+
+            '&' shuffles together the characters produced by all operands. When
+            every operand is fixed -- it has exactly one possible value, i.e.
+            ``count() == 1`` -- the multiset of characters is known, and the
+            answer is just the number of distinct permutations of that multiset.
+
+            When an operand can vary (e.g. a character set), the set of
+            characters being shuffled changes with each random draw, so there is
+            no single well-defined count. Rather than return a misleading,
+            draw-dependent number (the previous behaviour) we raise
+            NotImplementedError. See ``StringGenerator.count`` for the full set
+            of assumptions behind counting.
+            """
+            operand_counts = [node.count(randomizer, **kwargs) for node in self.seq]
+            if all(c == 1 for c in operand_counts):
+                # every operand is fixed, so the multiset of characters is known
+                chars = "".join(node.render(randomizer, **kwargs) for node in self.seq)
+                return permutation_count(chars)
+            raise NotImplementedError(
+                "count() is undefined for '&' over operands that are not fixed; "
+                "the result would depend on the random draw"
+            )
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + repr(self))
@@ -706,6 +726,30 @@ class StringGenerator:
         return self.seq.render(self.randomizer, **kwargs)
 
     def count(self, **kwargs) -> int:
+        r"""Return the size of the generation sample space for the template.
+
+        This is the number of distinct strings the template can produce, but
+        only under the following assumptions. Where they do not hold, the value
+        is the size of the *generation* space (the number of ways the template
+        can be filled in), which may exceed the number of distinct strings:
+
+        * **Character classes contain no duplicate characters.** ``len(chars)``
+          is used as the alphabet size, so a class with repeats (e.g.
+          ``[a\d\d]``) counts each repeat as a separate option and overcounts.
+          The generator also weights repeated characters more heavily when
+          rendering, so this number reflects that weighting.
+        * **Alternation (``|``) branches are disjoint.** The count sums the
+          branch sizes, which equals the number of distinct results only if no
+          two branches can produce the same string; overlapping branches
+          overcount.
+        * **Permutation (``&``) is applied only to fixed operands.** For ``&``
+          over operands that can vary, the count depends on the random draw, so
+          ``count()`` raises NotImplementedError instead of guessing.
+
+        ``count()`` also raises NotImplementedError if the template contains a
+        ``${...}`` source, since a source may be an arbitrary callable or list
+        whose size is unknown.
+        """
         return self.seq.count(self.randomizer, **kwargs)
 
     def dump(self, cnt=None, **kwargs):

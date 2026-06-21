@@ -75,10 +75,64 @@ even if it repeats another character in the sequence:
 Limitations
 -----------
 
-``count()`` will not know how to produce a result if you use a source variable
-that could be a callable or list. That's when using the ``${somevariable}``
-syntax.
+``count()`` returns the size of the *generation sample space*: the number of
+ways the template can be filled in. This equals the number of distinct strings
+only when the assumptions below hold. Where they do not, ``count()`` overcounts
+the distinct results (or, for the shuffle operator, raises).
 
-It will very specifically not work correct if you use the shuffle operator ``&``
-on a complex template expression. 
+Duplicate characters in a class
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As shown above, every specified character is counted even if it repeats another
+character in the class: the alphabet size is ``len(chars)``, not the number of
+*distinct* characters.
+
+.. code:: python
+
+    In [1]: SG(r"[0-9\d]{2}").count()
+    Out[1]: 400          # 20 ** 2, but only 100 distinct results
+
+This mirrors rendering, where repeated characters are simply more likely to be
+chosen, so the number reflects that weighting rather than the distinct results.
+
+Overlapping alternation
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For alternation (``|``), ``count()`` sums the size of each branch. That equals
+the number of distinct results only when the branches cannot produce the same
+string. Overlapping branches overcount:
+
+.. code:: python
+
+    In [2]: SG(r"[ab]|[ab]").count()
+    Out[2]: 4           # 2 + 2, but only 2 distinct results
+
+The shuffle operator
+~~~~~~~~~~~~~~~~~~~~~~
+
+The shuffle operator (``&``) permutes together the characters produced by all of
+its operands. ``count()`` can answer this only when every operand is *fixed* --
+it has exactly one possible value -- because then the characters being shuffled
+are known:
+
+.. code:: python
+
+    In [3]: SG(r"1&abc").count()
+    Out[3]: 24         # distinct arrangements of "1abc" = 4!
+
+If any operand can vary, the characters being shuffled change with each random
+draw, so there is no single count. In that case ``count()`` raises
+``NotImplementedError`` rather than return a draw-dependent number:
+
+.. code:: python
+
+    In [4]: SG(r"[\d]{2}&[\d]{1}").count()
+    ---------------------------------------------------------------------------
+    NotImplementedError: count() is undefined for '&' over operands that are not fixed; ...
+
+Source variables
+~~~~~~~~~~~~~~~~~~
+
+``count()`` cannot count a ``${somevariable}`` source, because the variable may
+be a callable or list whose size is unknown. It raises ``NotImplementedError``.
 

@@ -411,6 +411,22 @@ class TestSG(unittest.TestCase):
             SG(r"[\u\d]{2}|[abc]{3}", uaf=100).render_list(1323, unique=True)
         )
 
+    def test_count_and_operator(self):
+        """count() over '&' is deterministic and only defined for fixed operands."""
+        # Fixed (literal) operands: distinct permutations of "1abc" = 4! = 24.
+        sg = SG(r"1&abc")
+        assert sg.count() == 24
+        assert sg.count() == len(sg.render_set(24))
+
+        # Deterministic across repeated calls. Previously this rendered once and
+        # counted that single sample, so the value varied with the random draw.
+        assert len({SG(r"1&abc").count() for _ in range(20)}) == 1
+
+        # Operands that can vary have no single well-defined count: raise rather
+        # than return a draw-dependent number.
+        with self.assertRaises(NotImplementedError):
+            SG(r"[\d]{2}&[\d]{1}").count()
+
     def test_probabilistic_or(self):
         d = SG("0|1|2|3|4|5|6|7|8|9").render_list(10000)
         d = [int(d) for d in d]
