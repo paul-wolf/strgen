@@ -42,7 +42,7 @@ from abc import ABC, abstractmethod
 from collections import Counter, namedtuple
 from math import factorial
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
 

@@ -15,7 +15,7 @@ project = "StringGenerator"
 copyright = "2013-2026, Paul Wolf"
 author = "Paul Wolf"
 
-release = "0.5.0"
+release = "0.5.1"
 
 templates_path = ["_templates"]
 
