@@ -369,5 +369,65 @@ class TestSG(unittest.TestCase):
         # ['1c', '2b', '1b', '2c', '2c', '3c', '3c', '2b', '1c', '1c']
 
 
+class TestParserRegressions(unittest.TestCase):
+    """Regression tests for parser defects.
+
+    These assert the *intended* behavior and are expected to fail until the
+    parser/escape handling is fixed. Each maps to a demonstrated bug.
+    """
+
+    def test_escaped_non_meta_in_literal_not_doubled(self):
+        """`\\a` should be a literal 'a', not 'aa'.
+
+        getLiteral re-adds the escaped char because the loop variable still
+        holds it after consumption.
+        """
+        self.assertEqual(SG(r"\a").render(), "a")
+        self.assertEqual(SG(r"foo\bar").render(), "foobar")
+
+    def test_escaped_backslash_literal(self):
+        """An escaped backslash is a single literal backslash."""
+        self.assertEqual(SG(r"\\x").render(), "\\x")
+        self.assertEqual(SG(r"a\\b").render(), "a\\b")
+
+    def test_escaped_backslash_before_class(self):
+        """A literal backslash immediately before a character class must parse.
+
+        `\\[abc]` => one backslash followed by one of a/b/c.
+        """
+        result = SG(r"\\[abc]").render()
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], "\\")
+        self.assertIn(result[1], "abc")
+
+    def test_escaped_backslash_before_class_with_prefix(self):
+        result = SG(r"x\\[ab]").render()
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[:2], "x\\")
+        self.assertIn(result[2], "ab")
+
+    def test_source_at_start_of_pattern(self):
+        """A `${name}` source at index 0 must render (last() is None there)."""
+        self.assertEqual(SG(r"${names}").render(names=["A"]), "A")
+
+    def test_empty_class_raises_syntax_error(self):
+        """An empty character class is a template error, not a randrange crash."""
+        for t in (r"[]", r"[]{3}"):
+            with self.assertRaises(SG.SyntaxError):
+                SG(t).render()
+
+    def test_parse_errors_are_syntax_errors(self):
+        """Malformed templates raise SG.SyntaxError, not bare Exception/TypeError."""
+        for t in (r"[a]{", r"[a]{1", r"${ }", r"${1bad}"):
+            with self.assertRaises(SG.SyntaxError):
+                SG(t).render()
+
+    def test_existing_syntax_errors_still_raise(self):
+        """Baselines that already raise SG.SyntaxError; lock them in."""
+        for t in (r"[a]{x}", r"[a-]", r"[\w]{10:}"):
+            with self.assertRaises(SG.SyntaxError):
+                SG(t).render()
+
+
 if __name__ == "__main__":
     unittest.main()

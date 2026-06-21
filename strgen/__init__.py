@@ -38,12 +38,19 @@ import typing
 import math
 import itertools
 from abc import ABC, abstractmethod
-from collections import Counter
+from collections import Counter, namedtuple
 from math import factorial
 
 __version__ = "0.4.4"
 __author__ = "Paul Wolf"
 __license__ = "BSD"
+
+
+# A lexer token. ``type`` is one of the structural kinds (LBRACKET, PIPE, ...)
+# or "CHAR"/"EOF". ``escaped`` is only meaningful for CHAR tokens and records
+# whether the character came from a backslash escape, so the parser can tell a
+# literal "[" from a class opener without ever re-examining backslashes.
+Token = namedtuple("Token", ["type", "value", "escaped"], defaults=[False])
 
 
 def permutation_count(s):
@@ -330,14 +337,11 @@ class StringGenerator:
             return str(self)
 
     def __init__(self, pattern, uaf=10, randomizer=None, seed=None):
-        try:
-            self.pattern = pattern
-        except NameError:
-            self.pattern = pattern
-        self.seq = None
-        self.index = -1
+        self.pattern = pattern
+        self.pos = 0
         self.unique_attempts_factor = uaf
-        self.seq = self.getSequence()
+        self.tokens = self._tokenize()
+        self.seq = self._parse()
         if randomizer:
             if not (
                 hasattr(randomizer, "randint") and hasattr(randomizer, "choice") and hasattr(randomizer, "shuffle")
@@ -347,216 +351,244 @@ class StringGenerator:
         else:
             StringGenerator.randomizer = randomizer_factory(seed)
 
-    def current(self):
-        if self.index < len(self.pattern):
-            return self.pattern[self.index]
-        return None
-
-    def peek(self):
-        """Just an alias."""
-        return self.current()
-
-    def next(self):
-        self.index += 1
-        return self.current()
-
-    def lookahead(self):
-        if self.index + 1 < len(self.pattern):
-            return self.pattern[self.index + 1]
-        return None
-
-    def last(self):
-        if self.index == 0:
-            return None
-        return self.pattern[self.index - 1]
-
-    def getQuantifier(self):
-        start = -1
-        bracket = self.next()
-        # we should only be here because that was a bracket
-        if not bracket == "{":
-            raise Exception("parse error getting quantifier")
-        d = ""
-        digits = "0"
-        while True:
-            d = self.next()
-            if not d:
-                raise Exception("unexpected end of input getting quantifier")
-            if d == ":" or d == "-":
-                start = int(digits)
-                digits = "0"
-                continue
-            if d == "}":
-                if self.last() in ":-":
-                    # this happens if the user thinks the quantifier
-                    # behaves like python slice notation in allowing uppper range to be open
-                    raise StringGenerator.SyntaxError("quantifier range must be closed")
-                break
-            if d.isnumeric():
-                digits += d
-            else:
-                raise StringGenerator.SyntaxError("non-digit in count")
-        return [start, int(digits)]
-
-    def getSource(self):
-        """Extract the identifier out of this construct: ${mylist}: mylist"""
-        bracket = self.next()
-        # we should only be here because that was a bracket
-        if not bracket == "{":
-            raise Exception("parse error getting source")
-        c = ""
-        identifier = ""
-        while True:
-            c = self.next()
-            if not c:
-                raise Exception("unexpected end of input getting source")
-            if c == "}":
-                break
-            else:
-                identifier += c
-        if not identifier or not identifier.isidentifier():
-            raise StringGenerator.SyntaxError("not a valid identifier: %s" % identifier)
-        return StringGenerator.Source(identifier)
-
     def getCharacterRange(self, f, t):
         chars = ""
         # support z-a as a range
         if not ord(f) < ord(t):
-            tmp = f
-            f = t
-            t = tmp
+            f, t = t, f
         if (ord(t) - ord(f)) > 10000:  # protect against large sets ?
             raise Exception("character range too large: %s - %s: %s" % (f, t, ord(t) - ord(f)))
         for c in range(ord(f), ord(t) + 1):
             chars += chr(c)
         return chars
 
-    def getCharacterSet(self):
-        """Get a character set with individual members or ranges.
+    # ----- Tokenizer ------------------------------------------------------
 
-        Current index is on '[', the start of the character set.
+    # Structural metacharacters each map to their own token type. Everything
+    # else becomes a CHAR token. Crucially, a backslash escape is resolved
+    # exactly once here into a CHAR token (escaped=True), so the parser never
+    # sees a backslash and never has to guess whether a metacharacter was
+    # escaped via lookbehind.
+    _meta_token = {
+        "[": "LBRACKET",
+        "]": "RBRACKET",
+        "{": "LBRACE",
+        "}": "RBRACE",
+        "(": "LPAREN",
+        ")": "RPAREN",
+        "|": "PIPE",
+        "&": "AMP",
+        "$": "DOLLAR",
+    }
 
-        """
-
-        chars = ""
-        c = None
-        cnt = 1
-        start = 0
-
-        while True:
-            c = self.next()
-            if self.lookahead() == "-" and not c == "\\":
-                f = c
-                self.next()  # skip hyphen
-                c = self.next()  # get far range
-                if not c or (c in self.meta_chars):
-                    raise StringGenerator.SyntaxError("unexpected end of class range")
-                chars += self.getCharacterRange(f, c)
-            elif c == "\\":
-                if self.lookahead() == "\\":
-                    c = self.next()
-                    chars += c
-                    continue
-                if self.lookahead() in self.meta_chars:
-                    c = self.next()
-                    chars += c
-                    continue
-                elif self.lookahead() in self.string_code:
-                    c = self.next()
-                    chars += self.string_code[c]
-            elif c and c not in self.meta_chars:
-                chars += c
-            if c == "]":
-                if self.lookahead() == "{":
-                    [start, cnt] = self.getQuantifier()
+    def _tokenize(self):
+        """Turn self.pattern into a flat list of tokens ending in EOF."""
+        tokens = []
+        pattern = self.pattern
+        i = 0
+        n = len(pattern)
+        while i < n:
+            ch = pattern[i]
+            if ch == "\\":
+                if i + 1 < n:
+                    tokens.append(Token("CHAR", pattern[i + 1], True))
+                    i += 2
                 else:
-                    start = -1
-                    cnt = 1
-                break
-            if c and c in self.meta_chars and not self.last() == "\\":
-                raise StringGenerator.SyntaxError("Un-escaped character in class definition: %s" % c)
-            if not c:
-                break
-
-        return StringGenerator.CharacterSet(chars, start, cnt)
-
-    def getLiteral(self):
-        """Get a sequence of non-special characters."""
-        # we are on the first non-special character
-
-        chars = ""
-        c = self.current()
-        while True:
-            if c and c == "\\":
-                c = self.next()
-                if c:
-                    chars += c
+                    # A trailing backslash escapes nothing; drop it.
+                    i += 1
                 continue
-            elif not c or (c in self.meta_chars):
-                break
+            kind = self._meta_token.get(ch)
+            if kind:
+                tokens.append(Token(kind, ch))
             else:
-                chars += c
-            if self.lookahead() and self.lookahead() in self.meta_chars:
+                tokens.append(Token("CHAR", ch))
+            i += 1
+        tokens.append(Token("EOF", None))
+        return tokens
+
+    # ----- Parser ---------------------------------------------------------
+
+    def _peek(self):
+        return self.tokens[self.pos]
+
+    def _advance(self):
+        tok = self.tokens[self.pos]
+        self.pos += 1
+        return tok
+
+    def _parse(self):
+        self.pos = 0
+        return self._parse_sequence(level=0)
+
+    def _parse_literal(self):
+        """Consume a run of CHAR tokens into a single Literal node."""
+        chars = []
+        while self._peek().type == "CHAR":
+            chars.append(self._advance().value)
+        return StringGenerator.Literal("".join(chars))
+
+    def _parse_source(self):
+        """Parse a ${identifier} source; '$' and '{' are the current tokens."""
+        self._advance()  # $
+        self._advance()  # {
+        chars = []
+        while True:
+            tok = self._advance()
+            if tok.type == "EOF":
+                raise StringGenerator.SyntaxError("unexpected end of input getting source")
+            if tok.type == "RBRACE":
                 break
-            c = self.next()
-        return StringGenerator.Literal(chars)
+            chars.append(tok.value if tok.value is not None else "")
+        identifier = "".join(chars)
+        if not identifier or not identifier.isidentifier():
+            raise StringGenerator.SyntaxError("not a valid identifier: %s" % identifier)
+        return StringGenerator.Source(identifier)
 
-    def getSequence(self, level=0):
-        """Get a sequence of nodes.
+    def _parse_quantifier(self):
+        """Parse a {m}, {m:n} or {m-n} quantifier; '{' is the current token."""
+        self._advance()  # {
+        start = -1
+        digits = "0"
+        prev_was_separator = False
+        while True:
+            tok = self._advance()
+            if tok.type == "EOF":
+                raise StringGenerator.SyntaxError("unexpected end of input getting quantifier")
+            if tok.type == "RBRACE":
+                if prev_was_separator:
+                    # the user likely expected python slice notation, where the
+                    # upper bound may be left open; we require a closed range
+                    raise StringGenerator.SyntaxError("quantifier range must be closed")
+                break
+            if tok.type == "CHAR" and tok.value in ":-":
+                start = int(digits)
+                digits = "0"
+                prev_was_separator = True
+                continue
+            if tok.type == "CHAR" and tok.value.isnumeric():
+                digits += tok.value
+                prev_was_separator = False
+                continue
+            raise StringGenerator.SyntaxError("non-digit in count")
+        return [start, int(digits)]
 
-        We support only two operators: '|' and '&'
+    def _parse_character_class(self):
+        """Parse a [...] class with individual members, ranges and shortcuts.
 
+        The current token is the opening '['.
         """
-        operand_stack = list()
+        self._advance()  # [
+        chars = []
+        closed = False
+        while True:
+            tok = self._peek()
+            if tok.type == "EOF":
+                # Unterminated class. The original parser tolerated this, so we
+                # keep that behavior rather than introduce a new error here.
+                break
+            if tok.type == "RBRACKET":
+                self._advance()
+                closed = True
+                break
+            if tok.type != "CHAR":
+                raise StringGenerator.SyntaxError("Un-escaped character in class definition: %s" % tok.value)
+
+            nxt = self.tokens[self.pos + 1]
+            if not tok.escaped and nxt.type == "CHAR" and not nxt.escaped and nxt.value == "-":
+                # a range: <near> '-' <far>
+                near = self._advance().value
+                self._advance()  # hyphen
+                far = self._advance()
+                if far.type != "CHAR":
+                    raise StringGenerator.SyntaxError("unexpected end of class range")
+                chars.append(self.getCharacterRange(near, far.value))
+                continue
+
+            if tok.escaped and tok.value in self.string_code:
+                chars.append(self.string_code[tok.value])
+            else:
+                chars.append(tok.value)
+            self._advance()
+
+        text = "".join(chars)
+        if not text:
+            raise StringGenerator.SyntaxError("empty character class")
+
+        if closed and self._peek().type == "LBRACE":
+            start, cnt = self._parse_quantifier()
+        elif closed:
+            start, cnt = -1, 1
+        else:
+            # unterminated class: original left start=0 (renders 0 or 1 char)
+            start, cnt = 0, 1
+        return StringGenerator.CharacterSet(text, start, cnt)
+
+    def _parse_sequence(self, level=0):
+        """Parse a sequence of nodes, honoring the '|' and '&' operators.
+
+        The operator handling mirrors the original parser: operands are
+        gathered onto a stack and committed into a SequenceOR/SequenceAND
+        whenever the operator changes or a new operand group begins.
+        """
+        operand_stack = []
         op = None
-        seq = list()
+        seq = []
 
         def commit_operands():
-            """Append to seq if operands."""
             nonlocal operand_stack, op, seq
             if op and operand_stack:
                 klass = StringGenerator.SequenceOR if op == "|" else StringGenerator.SequenceAND
                 seq.append(klass(operand_stack[:]))
-                operand_stack = list()
+                operand_stack = []
                 op = None
 
+        # Track whether the previously consumed token was a binary operator so
+        # we can tell if a new '[', '(' or '${' opens a fresh operand group.
+        prev_exists = False
+        prev_is_operator = False
         sequence_closed = False
+
         while True:
-            c = self.next()
-            if not c:
+            tok = self._peek()
+            t = tok.type
+
+            if t == "EOF":
                 break
-            if c and c not in self.meta_chars:
-                seq.append(self.getLiteral())
-            elif c and c == "$" and self.lookahead() == "{":
-                if self.last() not in "&|":
+            elif t == "CHAR":
+                seq.append(self._parse_literal())
+                prev_exists, prev_is_operator = True, False
+            elif t == "DOLLAR" and self.tokens[self.pos + 1].type == "LBRACE":
+                if prev_exists and not prev_is_operator:
                     commit_operands()
-                seq.append(self.getSource())
-            elif c == "[" and not self.last() == "\\":
-                # if this is the first node after an op
-                # it is a right operand
-                # otherwise, stop collecting operands
-                if self.last() and self.last() not in "&|":
+                seq.append(self._parse_source())
+                prev_exists, prev_is_operator = True, False
+            elif t == "LBRACKET":
+                if prev_exists and not prev_is_operator:
                     commit_operands()
-                seq.append(self.getCharacterSet())
-            elif c == "(" and not self.last() == "\\":
-                if self.last() and self.last() not in "&|":
+                seq.append(self._parse_character_class())
+                prev_exists, prev_is_operator = True, False
+            elif t == "LPAREN":
+                if prev_exists and not prev_is_operator:
                     commit_operands()
-                seq.append(self.getSequence(level + 1))
-            elif c == ")" and not self.last() == "\\":
-                # end of this sequence
+                self._advance()  # (
+                seq.append(self._parse_sequence(level + 1))
+                prev_exists, prev_is_operator = True, False
+            elif t == "RPAREN":
                 if level == 0:
-                    # there should be no parens here
                     raise StringGenerator.SyntaxError("Extra closing parenthesis")
+                self._advance()  # )
                 sequence_closed = True
                 break
-            elif c in "|&" and not self.last() == "\\":
-                if op and not op == c:
-                    # handle the case where we switch operators
+            elif t in ("PIPE", "AMP"):
+                if op and not op == tok.value:
+                    # operator switched; flush the pending operand group
                     commit_operands()
-                op = c
+                op = tok.value
+                self._advance()
+                prev_exists, prev_is_operator = True, True
             else:
-                if c in self.meta_chars and not self.last() == "\\":
-                    raise StringGenerator.SyntaxError("Un-escaped special character: %s" % c)
+                # LBRACE, RBRACE, or a '$' not introducing a source.
+                raise StringGenerator.SyntaxError("Un-escaped special character: %s" % tok.value)
 
             if op and len(seq):
                 operand_stack.append(seq.pop())
@@ -564,7 +596,7 @@ class StringGenerator:
         commit_operands()
 
         if level > 0 and not sequence_closed:
-            # it means we are finishing a non-first-level sequence without closing parens
+            # finishing a nested sequence without a closing parenthesis
             raise StringGenerator.SyntaxError("Missing closing parenthesis")
 
         return StringGenerator.Sequence(seq)
@@ -589,7 +621,7 @@ class StringGenerator:
         import sys
 
         if not self.seq:
-            self.seq = self.getSequence()
+            self.seq = self._parse()
         print("StringGenerator version: %s" % (__version__))
         print("Python version: %s" % sys.version)
         print(f"Random method provider class: {StringGenerator.randomizer.__class__.__name__}")
