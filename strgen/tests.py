@@ -320,6 +320,47 @@ class TestSG(unittest.TestCase):
             list2 = sg.render_list(100)
             assert collections.Counter(list1) == collections.Counter(list2)
 
+    def test_buffered_secure_randomizer(self):
+        """BufferedSecureRandom is reachable via SG and drives every path."""
+        # Reachable without an extra import.
+        rng = SG.BufferedSecureRandom
+        from strgen import BufferedSecureRandom as ModuleLevel
+
+        assert rng is ModuleLevel
+
+        # Satisfies the randomizer contract.
+        instance = rng()
+        for method in ("randint", "choice", "choices", "shuffle"):
+            assert hasattr(instance, method)
+
+        # Fixed-length class (choices path).
+        result = SG(r"[\d]{10}", randomizer=rng()).render_set(2000)
+        assert len(result) == 2000
+        assert all(len(s) == 10 and s.isdigit() for s in result)
+
+        # Range quantifier (randint -> getrandbits path). A tiny buffer on a
+        # single reused instance forces many refills across the 200 renders.
+        ranged_sg = SG(r"[\d]{2:5}", randomizer=rng(bufsize=64))
+        ranged = [ranged_sg.render() for _ in range(200)]
+        assert all(2 <= len(s) <= 5 for s in ranged)
+
+        # Seeding is a no-op: two instances still differ.
+        a = SG(r"[\w]{16}", randomizer=rng()).render()
+        b = SG(r"[\w]{16}", randomizer=rng()).render()
+        assert a != b
+
+        # The fast choices override (byte rejection sampling) is unbiased.
+        # Reuse one generator so the 1 MB buffer is allocated once.
+        digit_sg = SG(r"[\d]", randomizer=rng())
+        counts = collections.Counter(digit_sg.render() for _ in range(20000))
+        assert set(counts) == set("0123456789")
+        # each digit within a generous band around the 2000 expected
+        assert all(1700 < c < 2300 for c in counts.values())
+
+        # Alphabets larger than one byte fall back to the standard path.
+        big = SG(r"[Ā-Ԁ]{4}", randomizer=rng()).render()
+        assert len(big) == 4
+
     def test_randomizer_is_per_instance(self):
         """Each generator owns its randomizer.
 

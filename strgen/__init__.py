@@ -31,6 +31,7 @@
 # Original author: paul.wolf@yewleaf.com
 
 
+import os
 import random
 import string
 import types
@@ -78,6 +79,83 @@ def randomizer_factory(seed) -> random.Random:
         return random.Random()
 
 
+class BufferedSecureRandom(random.Random):
+    """Cryptographically secure RNG that buffers ``os.urandom`` in bulk.
+
+    ``random.SystemRandom`` reads from the OS entropy pool on every draw, which
+    means one syscall per random value. Generating large batches (e.g.
+    ``render_set(1_000_000)``) then spends most of its time in the kernel.
+
+    This class draws the exact same entropy -- raw ``os.urandom`` bytes, each
+    consumed once and never expanded by a userspace PRNG -- but reads it in big
+    chunks, amortizing the syscall across many values. It is therefore as
+    secure as ``SystemRandom`` (suitable for tokens, passwords, keys) while
+    being substantially faster for bulk generation.
+
+    Pass it via the ``randomizer`` argument; it is reachable without an extra
+    import as ``StringGenerator.BufferedSecureRandom``::
+
+        SG(r"[\\w\\p]{32}", randomizer=SG.BufferedSecureRandom()).render_set(50000)
+
+    Being entropy-based, it ignores seeding.
+    """
+
+    def __init__(self, bufsize=1 << 20):
+        self._buf = b""
+        self._i = 0
+        self._bufsize = bufsize
+        super().__init__()
+
+    def _take(self, n):
+        """Return n fresh random bytes, refilling the buffer when needed."""
+        if self._i + n > len(self._buf):
+            self._buf = os.urandom(max(n, self._bufsize))
+            self._i = 0
+        chunk = self._buf[self._i : self._i + n]
+        self._i += n
+        return chunk
+
+    def random(self):
+        """Return a 53-bit float in [0.0, 1.0), as SystemRandom.random does."""
+        return (int.from_bytes(self._take(7), "big") >> 3) * (2.0**-53)
+
+    def getrandbits(self, k):
+        if k <= 0:
+            raise ValueError("number of bits must be greater than zero")
+        nbytes = (k + 7) // 8
+        return int.from_bytes(self._take(nbytes), "big") >> (nbytes * 8 - k)
+
+    def choices(self, population, weights=None, *, cum_weights=None, k=1):
+        """Unweighted draws map bytes straight to indices via rejection
+        sampling, skipping the per-pick float construction in random(). This is
+        the hot path for character sets and is several times faster. Weighted
+        draws, an empty population, or alphabets larger than one byte fall back
+        to the standard implementation (which still uses our random()).
+        """
+        n = len(population)
+        if weights is not None or cum_weights is not None or n == 0 or n > 256:
+            return super().choices(population, weights, cum_weights=cum_weights, k=k)
+        limit = 256 - (256 % n)  # largest multiple of n <= 256; reject above it for uniformity
+        out = []
+        append = out.append
+        take = self._take
+        while len(out) < k:
+            for byte in take(k - len(out)):
+                if byte < limit:
+                    append(population[byte % n])
+                    if len(out) == k:
+                        break
+        return out
+
+    def seed(self, *args, **kwargs):
+        """No-op: entropy-based, so there is no seed state to set."""
+
+    def _notimplemented(self, *args, **kwargs):
+        raise NotImplementedError("BufferedSecureRandom is entropy-based; state cannot be saved or restored")
+
+    getstate = setstate = _notimplemented
+
+
 class StringGenerator:
     """Generate a randomized string of characters using a template.
 
@@ -110,6 +188,10 @@ class StringGenerator:
     # it is never a shared class attribute (which would let one instance clobber
     # another's RNG and break seeded determinism / thread-safety).
     randomizer: typing.Optional[random.Random]
+
+    # Exposed here so callers can opt into the fast secure RNG without a second
+    # import: SG(pattern, randomizer=SG.BufferedSecureRandom()).
+    BufferedSecureRandom = BufferedSecureRandom
 
     class SyntaxError(Exception):
         """Catch syntax errors."""
@@ -272,13 +354,14 @@ class StringGenerator:
                 raise e
 
         def render(self, randomizer, **kwargs):
-            cnt = 1
             if self.start > -1:
                 cnt = randomizer.randint(self.start, self.cnt)
             else:
                 cnt = self.cnt
 
-            return "".join(self.chars[randomizer.randint(0, len(self.chars) - 1)] for x in range(cnt))
+            # choices() draws all cnt characters in a single C-level call, far
+            # faster than one randint() per character for large outputs.
+            return "".join(randomizer.choices(self.chars, k=cnt))
 
         def count(self, randomizer, **kwargs):
             """Permutation with replacement.
@@ -347,9 +430,15 @@ class StringGenerator:
         self.seq = self._parse()
         if randomizer:
             if not (
-                hasattr(randomizer, "randint") and hasattr(randomizer, "choice") and hasattr(randomizer, "shuffle")
+                hasattr(randomizer, "randint")
+                and hasattr(randomizer, "choice")
+                and hasattr(randomizer, "choices")
+                and hasattr(randomizer, "shuffle")
             ):
-                Exception("The randomizer class instance must provide at least these methods: randint, choice, shuffle")
+                Exception(
+                    "The randomizer class instance must provide at least these methods: "
+                    "randint, choice, choices, shuffle"
+                )
             self.randomizer = randomizer
         else:
             self.randomizer = randomizer_factory(seed)
