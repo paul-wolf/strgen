@@ -1,0 +1,5 @@
+# Documentation build dependencies (used by Read the Docs).
+# Kept separate from the project's dev requirements.txt so the docs build
+# installs only what Sphinx needs.
+sphinx>=7,<9
+sphinx_rtd_theme>=3,<4
