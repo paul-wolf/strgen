@@ -35,7 +35,12 @@ strings in under five seconds:
 
 
 `render_list(100000, unique=True)` would accomplish the same thing but take well
-over 10x as long. 
+over 10x as long.
+
+For much larger batches, the default ``random.SystemRandom`` becomes the
+bottleneck (a syscall per draw). If you need cryptographic security, pass
+``SG.BufferedSecureRandom()`` as the ``randomizer`` for a large speedup; if you
+do not, seeding is faster still. See :doc:`randomizer` for the trade-offs.
 
 The `seed` parameter has the same effect with `render_set()`:
 

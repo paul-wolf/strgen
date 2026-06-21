@@ -44,12 +44,49 @@ When you use the ``seed`` option, it will force use of ``random.Random`` and use
 the provided seed value, which can be any integer. This will cause the results
 to be the same each time you initialise the StringGenerator.
 
+Fast, secure generation
+------------------------
+
+By default StringGenerator uses ``random.SystemRandom``, which is
+cryptographically secure but reads from the operating system entropy pool on
+every draw -- one syscall per random value. For large batches (for example
+``render_set(1000000)``) that syscall overhead dominates.
+
+``BufferedSecureRandom`` solves this. It draws the same ``os.urandom`` entropy
+as ``SystemRandom`` -- each byte used once and never expanded by a userspace
+PRNG -- but reads it in bulk so the syscall is amortized across many values. It
+is therefore as secure as ``SystemRandom`` while being many times faster for
+bulk generation. It is reachable without an extra import as
+``StringGenerator.BufferedSecureRandom``:
+
+.. code:: python
+
+    from strgen import StringGenerator as SG
+
+    sg = SG(r"[\w\p]{32}", randomizer=SG.BufferedSecureRandom())
+    tokens = sg.render_set(50000)
+
+Being entropy-based, it ignores any seed.
+
+If you do not need cryptographic randomness at all (for example, generating
+test data), seeding -- or passing a plain ``random.Random`` -- uses the much
+faster Mersenne Twister. Choose based on your needs:
+
+=================================  ==============  ========================
+Randomizer                         Relative speed  Cryptographically secure
+=================================  ==============  ========================
+``seed=`` / ``random.Random``      fastest         no
+``SG.BufferedSecureRandom()``      fast            yes
+``random.SystemRandom`` (default)  slowest         yes
+=================================  ==============  ========================
+
 Custom Random Class
 -------------------
 
 You can also provide your own Random class. Currently we use these methods:
 
 * ``choice()``
+* ``choices()``
 * ``randint()``
 * ``shuffle()``
 

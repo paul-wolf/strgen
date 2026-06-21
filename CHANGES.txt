@@ -1,3 +1,31 @@
+Changes 0.5.0
+------------------------------------
+Rewrite the template parser around a tokenizer that resolves backslash
+escapes exactly once. This fixes several escape-handling bugs:
+
+- An escaped non-special character in a literal was duplicated
+  (e.g. ``\a`` rendered as ``aa``).
+- An escaped backslash before a character class failed to parse
+  (e.g. ``\\[abc]``).
+- A ``${name}`` source at the very start of a pattern raised TypeError.
+- An empty character class ``[]`` raised a raw ValueError at render time.
+- Malformed templates now consistently raise StringGenerator.SyntaxError
+  instead of bare Exception/TypeError.
+
+The randomizer is now per-instance. Previously it was a shared class
+attribute, so constructing a second StringGenerator could clobber the RNG
+of an existing one, breaking seeded determinism and thread-safety.
+
+Performance: character sets now render with random.choices(), giving large
+speedups for bulk generation (render_set / render_list).
+
+Add BufferedSecureRandom: a cryptographically secure randomizer (same
+os.urandom entropy as SystemRandom) that buffers entropy in bulk to avoid a
+syscall per draw. It makes secure bulk generation many times faster and is
+reachable without an extra import as StringGenerator.BufferedSecureRandom.
+
+Custom randomizer classes now also need a choices() method.
+
 Changes 0.4.4
 ------------------------------------
 Document count() method.

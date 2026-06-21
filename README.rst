@@ -26,7 +26,7 @@ with word characters of 30 characters length:
 
 `Full documentation <https://strgen.readthedocs.io>`__
 
-The current package requires Python 3.6 or higher. Use version 0.3.4 or
+The current package requires Python 3.7 or higher. Use version 0.3.4 or
 earlier if you want to use Python 2.7 or an earlier Python 3 version.
 
 NB: with version 0.4.2, the preferred method for generating a unique
@@ -35,9 +35,35 @@ Generate 50000 unique secure tokens in a few seconds:
 
 .. code:: python
 
-   secure_tokens = SG("[\p\w]{32}").render_set(50000)
+   secure_tokens = SG(r"[\p\w]{32}").render_set(50000)
 
 ``render_set()`` does not support a progress callback.
+
+Performance and secure generation
+---------------------------------
+
+By default ``StringGenerator`` uses ``random.SystemRandom`` (cryptographically
+secure), which reads from the operating system entropy pool on every draw. That
+is the right default for passwords, keys and tokens, but the per-draw syscall
+makes very large batches slow.
+
+For large batches you have two faster options:
+
+- If you do **not** need cryptographic randomness (e.g. test data), pass a seed
+  or a plain ``random.Random`` to use the much faster Mersenne Twister:
+
+  .. code:: python
+
+     SG(r"[\d]{10}", seed=1).render_set(1_000_000)
+
+- If you **do** need cryptographic randomness, use ``BufferedSecureRandom``. It
+  draws the same ``os.urandom`` entropy as ``SystemRandom`` but reads it in bulk
+  to avoid a syscall per draw, making secure bulk generation many times faster.
+  It is reachable without an extra import:
+
+  .. code:: python
+
+     SG(r"[\w\p]{32}", randomizer=SG.BufferedSecureRandom()).render_set(50000)
 
 There is a rich feature set to randomize strings in situ or include
 external data.

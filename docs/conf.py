@@ -12,10 +12,10 @@ extensions = [
 # -- Project information -----------------------------------------------------
 
 project = "StringGenerator"
-copyright = "2021, Paul Wolf"
+copyright = "2013-2026, Paul Wolf"
 author = "Paul Wolf"
 
-release = "0.4.0"
+release = "0.5.0"
 
 templates_path = ["_templates"]
 
