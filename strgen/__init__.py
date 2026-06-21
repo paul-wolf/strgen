@@ -106,7 +106,10 @@ class StringGenerator:
 
     """
 
-    randomizer: typing.Optional[random.Random] = None
+    # Per-instance; assigned in __init__. Declared here only as a type hint so
+    # it is never a shared class attribute (which would let one instance clobber
+    # another's RNG and break seeded determinism / thread-safety).
+    randomizer: typing.Optional[random.Random]
 
     class SyntaxError(Exception):
         """Catch syntax errors."""
@@ -150,11 +153,11 @@ class StringGenerator:
         """The abstract class for all nodes"""
 
         @abstractmethod
-        def render(self, **kwargs):
+        def render(self, randomizer, **kwargs):
             pass
 
         @abstractmethod
-        def count(self, **kwargs):
+        def count(self, randomizer, **kwargs):
             pass
 
         @abstractmethod
@@ -168,15 +171,15 @@ class StringGenerator:
             """seq is a list."""
             self.seq = seq  # list of StringNodes
 
-        def render(self, **kwargs):
-            return "".join([x.render(**kwargs) for x in self.seq])
+        def render(self, randomizer, **kwargs):
+            return "".join([x.render(randomizer, **kwargs) for x in self.seq])
 
-        def count(self, **kwargs):
+        def count(self, randomizer, **kwargs):
             """This sequence of counts:
             P x P x P...
             The cummulative product.
             """
-            d = [_.count(**kwargs) for _ in self.seq]
+            d = [_.count(randomizer, **kwargs) for _ in self.seq]
             x = 1
             for i in d:
                 x *= i
@@ -190,13 +193,13 @@ class StringGenerator:
     class SequenceOR(Sequence):
         """Randomly choose from operands."""
 
-        def render(self, **kwargs):
+        def render(self, randomizer, **kwargs):
             """Return on of a sequence of nodes."""
 
-            return self.seq[StringGenerator.randomizer.randint(0, len(self.seq) - 1)].render(**kwargs)
+            return self.seq[randomizer.randint(0, len(self.seq) - 1)].render(randomizer, **kwargs)
 
-        def count(self, **kwargs):
-            return sum([x.count(**kwargs) for x in self.seq])
+        def count(self, randomizer, **kwargs):
+            return sum([x.count(randomizer, **kwargs) for x in self.seq])
 
         def dump(self, level=-1):
             print((StringGenerator.mytab * level) + repr(self))
@@ -214,15 +217,15 @@ class StringGenerator:
         of characters from operands.
         """
 
-        def render(self, **kwargs):
+        def render(self, randomizer, **kwargs):
             """Return a permutation without replacement of all characters in seq."""
-            char_list = list("".join([x.render(**kwargs) for x in self.seq]))
-            StringGenerator.randomizer.shuffle(char_list)
+            char_list = list("".join([x.render(randomizer, **kwargs) for x in self.seq]))
+            randomizer.shuffle(char_list)
             return "".join(char_list)
 
-        def count(self, **kwargs):
+        def count(self, randomizer, **kwargs):
             """This does not work for complex expressions."""
-            char_list = list("".join([x.render(**kwargs) for x in self.seq]))
+            char_list = list("".join([x.render(randomizer, **kwargs) for x in self.seq]))
             return permutation_count(char_list)
 
         def dump(self, level=-1):
@@ -242,10 +245,10 @@ class StringGenerator:
         def __init__(self, chars):
             self.literal = chars  # a literal string
 
-        def render(self, **kwargs):
+        def render(self, randomizer, **kwargs):
             return self.literal
 
-        def count(self, **kwargs):
+        def count(self, randomizer, **kwargs):
             return 1
 
         def dump(self, level=0):
@@ -268,16 +271,16 @@ class StringGenerator:
             except Exception as e:
                 raise e
 
-        def render(self, **kwargs):
+        def render(self, randomizer, **kwargs):
             cnt = 1
             if self.start > -1:
-                cnt = StringGenerator.randomizer.randint(self.start, self.cnt)
+                cnt = randomizer.randint(self.start, self.cnt)
             else:
                 cnt = self.cnt
 
-            return "".join(self.chars[StringGenerator.randomizer.randint(0, len(self.chars) - 1)] for x in range(cnt))
+            return "".join(self.chars[randomizer.randint(0, len(self.chars) - 1)] for x in range(cnt))
 
-        def count(self, **kwargs):
+        def count(self, randomizer, **kwargs):
             """Permutation with replacement.
             The cummulative sum of c ** r
             """
@@ -302,7 +305,7 @@ class StringGenerator:
         def __init__(self, source):
             self.source = source
 
-        def render(self, **kwargs):
+        def render(self, randomizer, **kwargs):
             src = kwargs.get(self.source) if self.source in kwargs else ""
             if isinstance(
                 src,
@@ -312,7 +315,7 @@ class StringGenerator:
                     tuple,
                 ),
             ):
-                return str(StringGenerator.randomizer.choice(src))
+                return str(randomizer.choice(src))
             if callable(src):
                 return str(src())
             elif isinstance(src, types.GeneratorType):
@@ -320,7 +323,7 @@ class StringGenerator:
             else:
                 return str(src)
 
-        def count(self, **kwargs):
+        def count(self, randomizer, **kwargs):
             """Since a source name can be a callable, we can't say what the count
             is.
 
@@ -347,9 +350,9 @@ class StringGenerator:
                 hasattr(randomizer, "randint") and hasattr(randomizer, "choice") and hasattr(randomizer, "shuffle")
             ):
                 Exception("The randomizer class instance must provide at least these methods: randint, choice, shuffle")
-            StringGenerator.randomizer = randomizer
+            self.randomizer = randomizer
         else:
-            StringGenerator.randomizer = randomizer_factory(seed)
+            self.randomizer = randomizer_factory(seed)
 
     def getCharacterRange(self, f, t):
         chars = ""
@@ -611,10 +614,10 @@ class StringGenerator:
             The generated string.
 
         """
-        return self.seq.render(**kwargs)
+        return self.seq.render(self.randomizer, **kwargs)
 
     def count(self, **kwargs) -> int:
-        return self.seq.count(**kwargs)
+        return self.seq.count(self.randomizer, **kwargs)
 
     def dump(self, cnt=None, **kwargs):
         """Print the parse tree and then call render for an example."""
@@ -624,7 +627,7 @@ class StringGenerator:
             self.seq = self._parse()
         print("StringGenerator version: %s" % (__version__))
         print("Python version: %s" % sys.version)
-        print(f"Random method provider class: {StringGenerator.randomizer.__class__.__name__}")
+        print(f"Random method provider class: {self.randomizer.__class__.__name__}")
         self.seq.dump()
         print(f"Potential outcome count: {self.count()}")
         print("Example result:")

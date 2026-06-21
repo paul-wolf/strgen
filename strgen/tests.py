@@ -320,6 +320,29 @@ class TestSG(unittest.TestCase):
             list2 = sg.render_list(100)
             assert collections.Counter(list1) == collections.Counter(list2)
 
+    def test_randomizer_is_per_instance(self):
+        """Each generator owns its randomizer.
+
+        Previously the randomizer was a class attribute, so constructing a
+        second generator clobbered the RNG of every existing one. This
+        interleaves two seeded instances and asserts each stays independent.
+        """
+        pattern = r"[\w]{20}"
+
+        a = SG(pattern, seed=1)
+        b = SG(pattern, seed=2)
+
+        # Interleave renders across the two instances.
+        a_first = a.render()
+        b.render()
+        a_second = a.render()
+
+        # 'a' must behave exactly like a standalone seed=1 generator,
+        # unaffected by 'b' having been constructed and used in between.
+        ref = SG(pattern, seed=1)
+        assert a_first == ref.render()
+        assert a_second == ref.render()
+
     def test_custom_bad_randomizer(self):
         pattern = r"[\w]{10}&([\d]{10}|M3W9MF_lH3906I14O50)"
         sg = SG(pattern, randomizer=CustomBadRandomizer())
